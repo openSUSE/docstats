@@ -1,0 +1,14 @@
+# Requirements file for pip (only for Travis CI)
+
+-r requirements.txt
+-r docs/requirements.txt
+pytest
+pytest-cov
+pytest-catchlog
+#
+flake8
+
+# coverage
+# codecov
+# codeclimate-test-reporter
+

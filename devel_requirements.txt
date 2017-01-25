@@ -1,0 +1,9 @@
+# Requirements file for pip
+# Use it with pip install -r devel_requirements.txt
+
+-r requirements.txt
+-r travis_requirements.txt
+flake8
+bumpversion
+prospector
+wheel
