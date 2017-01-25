@@ -36,13 +36,14 @@
 
 Usage:
    docstats [-h | --help]
-   docstats [-v ...] [options] CONFIGFILE
+   docstats [-v...] [options] CONFIGFILE
 
 Options:
-    -h, --help      Shows this help
-    -v              Raise verbosity level
-    --version       Prints the version
-    CONFIGFILE      The configuration file which contains all to repos to investigate
+    -h, --help             Shows this help
+    -v                     Raise verbosity level
+    -j JOBS, --jobs=JOBS   Allow N jobs at once
+    --version              Prints the version
+    CONFIGFILE             The configuration file which contains all to repos to investigate
 """
 
 from docopt import docopt
