@@ -14,7 +14,7 @@ Overview
         | |coveralls| |codecov|
         | |scrutinizer|
     * - package
-      - | |version| |downloads| |wheel| |supported-versions| |supported-implementations|
+      - | |version|
         | |commits-since|
 
 .. |docs| image:: https://readthedocs.org/projects/docstats/badge/?style=flat
