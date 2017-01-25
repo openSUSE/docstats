@@ -41,12 +41,12 @@ Usage:
 Options:
     -h, --help             Shows this help
     -v                     Raise verbosity level
-    -j JOBS, --jobs=JOBS   Allow N jobs at once
+    --jobs=N, -j N         Allow N jobs at once [default: 1]
     --version              Prints the version
     CONFIGFILE             The configuration file which contains all to repos to investigate
 """
 
-from docopt import docopt
+from docopt import docopt, DocoptExit
 
 
 def parsecli(cliargs=None):
@@ -59,5 +59,10 @@ def parsecli(cliargs=None):
     from docstats import __version__
     version = "%s %s" % (__package__, __version__)
     args = docopt(__doc__, argv=cliargs, version=version)
+
+    try:
+        args['--jobs'] = int(args['--jobs'])
+    except ValueError as error:
+        raise DocoptExit("Option -j/--jobs does not contain a number")
     return args
 
