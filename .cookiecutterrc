@@ -1,0 +1,49 @@
+# This file exists so you can easily regenerate your project.
+#
+# `cookiepatcher` is a convenient shim around `cookiecutter`
+# for regenerating projects (it will generate a .cookiecutterrc 
+# automatically for any template). To use it:
+#
+#    pip install cookiepatcher
+#    cookiepatcher gh:ionelmc/cookiecutter-pylibrary project-path
+#
+# See:
+#    https://pypi.python.org/pypi/cookiecutter
+#
+# Alternatively, you can run:
+#
+#    cookiecutter --overwrite-if-exists --config-file=project-path/.cookiecutterrc gh:ionelmc/cookiecutter-pylibrary
+
+default_context:
+
+    appveyor:                  'no'
+    c_extension_cython:        'no'
+    c_extension_optional:      'no'
+    c_extension_support:       'no'
+    codacy:                    'no'
+    codeclimate:               'no'
+    codecov:                   'yes'
+    command_line_interface:    'argparse'
+    command_line_interface_bin_name: 'docstats'
+    coveralls:                 'yes'
+    distribution_name:         'suse-docstats'
+    email:                     'toms@opensuse.org'
+    full_name:                 'Thomas Schraitle'
+    github_username:           'openSUSE'
+    landscape:                 'no'
+    package_name:              'docstats'
+    project_name:              'docstats'
+    project_short_description: 'Statistics and Metrics for Documentation Team'
+    release_date:              '2017-01-25'
+    repo_name:                 'docstats'
+    requiresio:                'no'
+    scrutinizer:               'yes'
+    sphinx_doctest:            'no'
+    sphinx_theme:              'sphinx-rtd-theme'
+    test_matrix_configurator:  'yes'
+    test_matrix_separate_coverage: 'no'
+    test_runner:               'pytest'
+    travis:                    'yes'
+    version:                   '0.1.0'
+    website:                   'https://github.com/openSUSE/docstats'
+    year:                      'now'
