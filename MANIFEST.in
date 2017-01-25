@@ -16,7 +16,9 @@ include CONTRIBUTING.rst
 include LICENSE
 include README.rst
 include STATISTICS.rst
-
+include devel_requirements.txt
+include requirements.txt
+include travis_requirements.txt
 include tox.ini .travis.yml
 
 global-exclude *.py[cod] __pycache__ *.so *.dylib
