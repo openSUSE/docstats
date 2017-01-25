@@ -28,7 +28,8 @@ install:
   - tox --version
 
 script:
-  - tox -v
+    - tox -v
+    # - py.test -l -vv --no-cov-on-fail --cov=docstats --cov-report=term-missing
 
 after_failure:
   - more .tox/log/* | cat
