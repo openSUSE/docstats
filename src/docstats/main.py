@@ -16,19 +16,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
+from .cli import parsecli
 
-"""
-Entrypoint module, in case you use `python -mdocstats`.
-
-
-Why does this file exist, and why __main__? For more info, read:
-
-- https://www.python.org/dev/peps/pep-0338/
-- https://docs.python.org/2/using/cmdline.html#cmdoption-m
-- https://docs.python.org/3/using/cmdline.html#cmdoption-m
-"""
-
-from docstats.main import main
-
-if __name__ == "__main__":
-    main()
+def main(args=None):
+    args = parsecli(args)
+    print(args)

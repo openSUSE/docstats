@@ -1,5 +1,5 @@
 
-from docstats.cli import main
+from docstats.main import main
 
 
 def test_main():
