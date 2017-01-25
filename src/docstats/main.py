@@ -18,6 +18,7 @@
 
 from .cli import parsecli
 
+
 def main(cliargs=None):
     """Entry point for the application script
 

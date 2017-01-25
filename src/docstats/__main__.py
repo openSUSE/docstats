@@ -16,7 +16,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-
 """
 Entrypoint module, in case you use `python -mdocstats`.
 
@@ -30,6 +29,7 @@ Why does this file exist, and why __main__? For more info, read:
 
 import sys
 from docstats.main import main
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
