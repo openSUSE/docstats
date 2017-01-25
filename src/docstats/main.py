@@ -18,6 +18,18 @@
 
 from .cli import parsecli
 
-def main(args=None):
-    args = parsecli(args)
-    print(args)
+def main(cliargs=None):
+    """Entry point for the application script
+
+    :param list cliargs: Arguments to parse or None (=use sys.argv)
+    :return: return codes from ``ERROR_CODES``
+    """
+    try:
+        args = parsecli(cliargs)
+        print(args)
+
+    except (FileNotFoundError, OSError) as error:
+        print(error)
+        return 10
+
+    return 0
