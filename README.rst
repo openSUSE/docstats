@@ -41,22 +41,6 @@ Overview
     :alt: Commits since latest release
     :target: https://github.com/openSUSE/docstats/compare/v0.1.0...master
 
-.. |downloads| image:: https://img.shields.io/pypi/dm/suse-docstats.svg
-    :alt: PyPI Package monthly downloads
-    :target: https://pypi.python.org/pypi/suse-docstats
-
-.. |wheel| image:: https://img.shields.io/pypi/wheel/suse-docstats.svg
-    :alt: PyPI Wheel
-    :target: https://pypi.python.org/pypi/suse-docstats
-
-.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/suse-docstats.svg
-    :alt: Supported versions
-    :target: https://pypi.python.org/pypi/suse-docstats
-
-.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/suse-docstats.svg
-    :alt: Supported implementations
-    :target: https://pypi.python.org/pypi/suse-docstats
-
 .. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/openSUSE/docstats/master.svg
     :alt: Scrutinizer Status
     :target: https://scrutinizer-ci.com/g/openSUSE/docstats/
@@ -64,9 +48,9 @@ Overview
 
 .. end-badges
 
-Statistics and Metrics for Documentation Team
+Statistics and Metrics for SUSE documentation team.
 
-* Free software: BSD license
+* Free software: GPL 3.0+
 
 Installation
 ============
@@ -75,10 +59,6 @@ Installation
 
     pip install suse-docstats
 
-Documentation
-=============
-
-https://docstats.readthedocs.io/
 
 Development
 ===========
@@ -87,19 +67,3 @@ To run the all tests run::
 
     tox
 
-Note, to combine the coverage data from all the tox environments run:
-
-.. list-table::
-    :widths: 10 90
-    :stub-columns: 1
-
-    - - Windows
-      - ::
-
-            set PYTEST_ADDOPTS=--cov-append
-            tox
-
-    - - Other
-      - ::
-
-            PYTEST_ADDOPTS=--cov-append tox
