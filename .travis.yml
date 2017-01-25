@@ -1,39 +1,30 @@
 language: python
-python: '3.5'
+python:
+    - "3.4"
+    - "3.5"
+    - "3.6"
 sudo: false
 env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-  matrix:
-    - TOXENV=check
-    - TOXENV=docs
-
-    - TOXENV=3.4
-    - TOXENV=3.5
-    - TOXENV=3.6
-      # - TOXENV=pypy-cover,report,coveralls,codecov
-      # - TOXENV=pypy-nocov
 
 before_install:
-  - python --version
+  - python3 --version
   - uname -a
   - lsb_release -a
-
-install:
-  - pip install tox
   - virtualenv --version
   - easy_install --version
   - pip --version
-  - tox --version
+  # - tox --version
+
+install:
+  - pip install -U pip setuptools
+  - pip install -r travis_requirements.txt
 
 script:
-    - tox -v
-    # - py.test -l -vv --no-cov-on-fail --cov=docstats --cov-report=term-missing
-
-after_failure:
-  - more .tox/log/* | cat
-  - more .tox/*/log/* | cat
+    # - tox -v
+    - py.test -l -vv --no-cov-on-fail --cov=docstats --cov-report=term-missing
 
 before_cache:
   - rm -rf $HOME/.cache/pip/log
