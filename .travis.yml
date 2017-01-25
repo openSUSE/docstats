@@ -26,6 +26,9 @@ script:
     # - tox -v
     - py.test -l -vv --no-cov-on-fail --cov=docstats --cov-report=term-missing
 
+after_success:
+    - codecov
+
 before_cache:
   - rm -rf $HOME/.cache/pip/log
 

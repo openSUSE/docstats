@@ -10,6 +10,6 @@ tox
 flake8
 
 # coverage
-# codecov
+codecov
 # codeclimate-test-reporter
 
