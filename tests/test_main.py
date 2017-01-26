@@ -3,6 +3,7 @@ import os
 from docstats.main import main
 
 
+@pytest.mark.skip
 def test_main():
     """runs __main__.py"""
     with pytest.raises(SystemExit):
@@ -10,5 +11,6 @@ def test_main():
         exec(compile(open(path).read(), path, "exec"), {}, {"__name__": "__main__"})
 
 
+@pytest.mark.skip
 def test_main_with_empty_args():
     assert main([]) == 0

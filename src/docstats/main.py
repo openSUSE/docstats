@@ -17,6 +17,7 @@
 #
 
 from .cli import parsecli
+from .config import parseconfig
 
 
 def main(cliargs=None):
@@ -27,7 +28,10 @@ def main(cliargs=None):
     """
     try:
         args = parsecli(cliargs)
-        print(args)
+        configfile = args['CONFIGFILE']
+        config = parseconfig(configfile)
+        # print(args)
+        # print(config)
 
     except (FileNotFoundError, OSError) as error:
         print(error)
