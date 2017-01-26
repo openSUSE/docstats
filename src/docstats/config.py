@@ -42,3 +42,16 @@ def parseconfig(configfile):
     config = ConfigParser(default_section='globals')
     files = config.read(configfile)
     return files, config
+
+
+def geturls(config):
+    """Yields all URLs from a repository; if a section doesn't have the url keyword it is skipped
+
+    :param config: a :class:`configparser.ConfigParser` instance
+    :type config: :class:`configparser.ConfigParser`
+    :return: yields the URL string
+    :rtype: generator
+    """
+    for  sec in config.sections():
+        if config.get(sec, 'url', fallback=None) != '':
+            yield config[sec]['url']
