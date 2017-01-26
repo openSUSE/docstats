@@ -18,7 +18,7 @@
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import current_thread
-from time import sleep
+from time import sleep, time
 import random
 import git
 
@@ -47,6 +47,7 @@ def worker(urls, tmpdir, jobs=1):  # pragma: no cover
     :param int jobs: integer number of workers to create [default: 1]
     """
     print("Calling worker...")
+    start = time()
     with ThreadPoolExecutor(max_workers=jobs) as executor:
         future_to_url = {executor.submit(clone_repo, url, tmpdir): url for url in urls}
         for future in as_completed(future_to_url):
@@ -57,4 +58,5 @@ def worker(urls, tmpdir, jobs=1):  # pragma: no cover
                 print('%r generated an exception: %s' % (url, exc))
             else:
                 print('%r page is %d bytes' % (url, len(data)))
-    print("Finished worker.")
+    end = time()
+    print("Finished worker. Time={:.1f}".format(float(end - start)))
