@@ -17,7 +17,10 @@
 #
 
 from .cli import parsecli
-from .config import parseconfig
+from .config import parseconfig, geturls
+from .worker import worker
+
+import os
 
 
 def main(cliargs=None):
@@ -29,9 +32,17 @@ def main(cliargs=None):
     try:
         args = parsecli(cliargs)
         configfile = args['CONFIGFILE']
-        config = parseconfig(configfile)
-        # print(args)
-        # print(config)
+        files, config = parseconfig(configfile)
+        print(args)
+        print(config)
+        # ----
+        #print("Sections found:", config.sections())
+        #print("branch", config['doc-slert']['branch'])
+        #print("url", config['doc-slert']['url'])
+        # ----
+        tmpdir = config.get('globals', 'tempdir', fallback=None)
+        os.makedirs(tmpdir, exist_ok=True)
+        worker(geturls(config), tmpdir, jobs=args['--jobs'])
 
     except (FileNotFoundError, OSError) as error:
         print(error)
