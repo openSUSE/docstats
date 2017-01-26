@@ -1,6 +1,9 @@
 import pytest
 
-from docstats.cli import parsecli
+import docstats.cli
+from docstats.cli import parsecli, checkcliargs
+
+from docopt import DocoptExit
 
 
 @pytest.mark.parametrize('cli,expected', [
@@ -31,7 +34,21 @@ from docstats.cli import parsecli
     # 7 - fail --jobs
     pytest.mark.xfail((['--jobs=x', 'foo.ini'], {} )),
 ])
-def test_parsecli(cli, expected):
+def test_parsecli(cli, expected, monkeypatch):
+
+    monkeypatch.setattr(docstats.cli.os.path, 'exists', lambda x: True)
+
     result = parsecli(cli)
     # Create set difference and only compare this with the expected dictionary
     assert {item: result.get(item, None) for item in expected} == expected
+
+
+
+def test_checkcliargs_with_FileNotFoundError():
+    with pytest.raises(FileNotFoundError):
+        checkcliargs({'--jobs': '1', 'CONFIGFILE': 'fake'})
+
+
+def test_checkcliargs_with_DocoptExit():
+    with pytest.raises(DocoptExit):
+        checkcliargs({'--jobs': 'x', 'CONFIGFILE': None})

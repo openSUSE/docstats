@@ -47,6 +47,7 @@ Options:
 """
 
 from docopt import docopt, DocoptExit
+import os
 
 
 def parsecli(cliargs=None):
@@ -60,9 +61,27 @@ def parsecli(cliargs=None):
     version = "%s %s" % (__package__, __version__)
     args = docopt(__doc__, argv=cliargs, version=version)
 
+    checkcliargs(args)
+    return args
+
+
+def checkcliargs(args):
+    """Make a consistency check
+
+    :param args: dictionary from docopt
+    :return: True | exceptions
+    """
+
+    configfile = args['CONFIGFILE']
+
     try:
         args['--jobs'] = int(args['--jobs'])
     except ValueError as error:
         raise DocoptExit("Option -j/--jobs does not contain a number")
-    return args
 
+    if configfile is None:
+        raise DocoptExit("Expected config file")
+
+    if not os.path.exists(configfile):
+        raise FileNotFoundError("Couldn't find {!r} config file.".format(configfile))
+    return True
