@@ -18,8 +18,9 @@
 
 from .cli import parsecli
 from .config import parseconfig, geturls
-from .worker import worker
+from .repo import analyze
 from .utils import gettmpdir
+from .worker import worker
 
 import os
 
@@ -43,10 +44,15 @@ def main(cliargs=None):
         # ----
         tmpdir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
         os.makedirs(tmpdir, exist_ok=True)
-        worker(geturls(config), tmpdir, jobs=args['--jobs'])
+        queue = worker(geturls(config), tmpdir, jobs=args['--jobs'])
+        analyze(queue)
 
     except (FileNotFoundError, OSError) as error:
         print(error)
+        return 10
+
+    except KeyboardInterrupt:
+        print("aborted.")
         return 10
 
     return 0

@@ -22,16 +22,11 @@ from time import sleep, time
 import queue
 import os.path
 
-import git
+import pygit2
 
 
-from .utils import git_urlparse
+from .utils import urlparse
 
-
-class Progress(git.RemoteProgress):  # pragma: no cover
-    def update(self, op_code, cur_count, max_count=None, message=''):
-        percent = cur_count/max_count*100
-        print(percent)
 
 
 def clone_repo(url, tmpdir):
@@ -41,16 +36,19 @@ def clone_repo(url, tmpdir):
     :param str tmpdir: the temporary directory to clone to
     :return: ???
     """
-    urldict = git_urlparse(url)
+    urldict = urlparse(url)
     gitdir = os.path.join(tmpdir, urldict['repo'])
 
     if os.path.exists(gitdir):
         print("URL {!r} alread cloned, using {!r}.".format(url, gitdir))
-        return git.repo.Repo(gitdir)
+        return pygit2.Repository(gitdir)
 
     print("%s: Cloning url=%r to %r" % (current_thread().name, url, gitdir))
-    repo = git.Repo.clone_from(url, gitdir)
-    return repo
+    start = time()
+    # repo = git.Repo.clone_from(url, gitdir)
+    repo = pygit2.clone_repository(url, gitdir )  # pygit2.UserPass('', '')
+    end = time()
+    return (end-start, repo)
 
 
 def worker(urls, tmpdir, jobs=1):  # pragma: no cover
@@ -79,7 +77,4 @@ def worker(urls, tmpdir, jobs=1):  # pragma: no cover
     end = time()
     print("Finished worker. Time={:.1f}".format(float(end - start)))
     print("Queue:", q)
-    while not q.empty():
-        print("Queue item: %s" % (q.get(),))
-
     return q
