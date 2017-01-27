@@ -18,13 +18,36 @@
 
 import re
 import os
+from urllib.parse import urlparse
+
 
 __all__ = ('git_urlparse', 'tmpdir')
+
 
 _GITURL_RE = re.compile(r'(?P<user>[\w\._-]+)@'
                         r'(?P<server>[\w\._-]+):'
                         r'(?P<domain>[\w\._-]+)/'
-                        r'(?P<repo>[\w\._-]+).git')
+                        r'(?P<repo>[\w\._-]+)\.git')
+_GITDOMAIN_REPO_RE = re.compile(r'(?P<domain>[\w\._-]+)/(?P<repo>[\w_-]+)')
+
+
+def http_urlparse(url):
+    """
+
+def http_urlparse(url):
+    """Parse Git HTTP(S) URls
+
+    :param url:
+    :return:
+    """
+    pr = urlparse(url)
+    groupdict = {'user': None, 'server': pr.netloc}
+    match =_GITDOMAIN_REPO_RE.search(pr.path)
+    if match is None:
+        # this should not happen...
+        raise ValueError('Could not find any matching parts in your Git URL: %r' % url)
+    groupdict.update(match.groupdict())
+    return groupdict
 
 
 def git_urlparse(url):

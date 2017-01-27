@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from docstats.utils import git_urlparse, gettmpdir
+from docstats.utils import git_urlparse, http_urlparse, gettmpdir
 
 
 # Matches any URL with USER@SERVER:DOMAIN/REPO.git
@@ -22,6 +22,28 @@ from docstats.utils import git_urlparse, gettmpdir
 ])
 def test_git_urlparse(url, expected):
     assert git_urlparse(url) == expected
+
+
+@pytest.mark.parametrize('url,expected', [
+    #
+    ('http://github.com/X/Y.git',
+     {'domain': 'X', 'repo': 'Y', 'server': 'github.com', 'user': None}),
+    #
+    ('https://github.com/X/Y.git',
+     {'domain': 'X', 'repo': 'Y', 'server': 'github.com', 'user': None}),
+    #
+    ('ftp://github.com/X/Y.git',
+     {'domain': 'X', 'repo': 'Y', 'server': 'github.com', 'user': None}),
+    #
+    ('http://github.com/X/Y',
+     {'domain': 'X', 'repo': 'Y', 'server': 'github.com', 'user': None}),
+    #
+    pytest.mark.xfail(('http://github.com', {} )),
+    #
+    # pytest.mark.xfail(('http://github.com/A/B', {} )),
+])
+def test_http_urlparse(url, expected):
+    assert http_urlparse(url) == expected
 
 
 @pytest.mark.parametrize('path,expected', [
