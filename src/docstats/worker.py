@@ -22,7 +22,8 @@ from time import sleep, time
 import queue
 import os.path
 
-import pygit2
+# import pygit2
+import git
 
 
 from .utils import urlparse
@@ -41,14 +42,15 @@ def clone_repo(url, tmpdir):
 
     if os.path.exists(gitdir):
         print("URL {!r} alread cloned, using {!r}.".format(url, gitdir))
-        return pygit2.Repository(gitdir)
+        # return pygit2.Repository(gitdir)
+        return git.Repo(gitdir)
 
     print("%s: Cloning url=%r to %r" % (current_thread().name, url, gitdir))
     start = time()
-    # repo = git.Repo.clone_from(url, gitdir)
-    repo = pygit2.clone_repository(url, gitdir )  # pygit2.UserPass('', '')
+    repo = git.Repo.clone_from(url, gitdir)
+    # repo = pygit2.clone_repository(url, gitdir )  # pygit2.UserPass('', '')
     end = time()
-    return (end-start, repo)
+    return repo
 
 
 def worker(urls, tmpdir, jobs=1):  # pragma: no cover
@@ -58,6 +60,7 @@ def worker(urls, tmpdir, jobs=1):  # pragma: no cover
     :param str tmpdir: the  temporary directory to clone to
     :param int jobs: integer number of workers to create [default: 1]
     """
+    # See also: http://www.codekoala.com/posts/command-line-progress-bar-python/
     print("Calling worker...")
     q = queue.Queue()
     start = time()

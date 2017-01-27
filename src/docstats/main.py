@@ -45,7 +45,7 @@ def main(cliargs=None):
         tmpdir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
         os.makedirs(tmpdir, exist_ok=True)
         queue = worker(geturls(config), tmpdir, jobs=args['--jobs'])
-        analyze(queue)
+        analyze(queue, config)
 
     except (FileNotFoundError, OSError) as error:
         print(error)
