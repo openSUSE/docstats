@@ -19,6 +19,7 @@
 from .cli import parsecli
 from .config import parseconfig, geturls
 from .worker import worker
+from .utils import gettmpdir
 
 import os
 
@@ -40,7 +41,7 @@ def main(cliargs=None):
         #print("branch", config['doc-slert']['branch'])
         #print("url", config['doc-slert']['url'])
         # ----
-        tmpdir = config.get('globals', 'tempdir', fallback=None)
+        tmpdir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
         os.makedirs(tmpdir, exist_ok=True)
         worker(geturls(config), tmpdir, jobs=args['--jobs'])
 

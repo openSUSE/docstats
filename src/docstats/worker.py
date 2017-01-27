@@ -19,9 +19,19 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import current_thread
 from time import sleep, time
-import random
+import queue
+import os.path
+
 import git
 
+
+from .utils import git_urlparse
+
+
+class Progress(git.RemoteProgress):  # pragma: no cover
+    def update(self, op_code, cur_count, max_count=None, message=''):
+        percent = cur_count/max_count*100
+        print(percent)
 
 
 def clone_repo(url, tmpdir):
@@ -31,12 +41,16 @@ def clone_repo(url, tmpdir):
     :param str tmpdir: the temporary directory to clone to
     :return: ???
     """
-    # Add here the git clone
-    print("%s: Cloning url=%r to %r" % (current_thread().name, url, tmpdir))
-    sleep(random.randrange(start=1, stop=6))
+    urldict = git_urlparse(url)
+    gitdir = os.path.join(tmpdir, urldict['repo'])
 
-    # git.Repo.clone_from(url, tmpdir, progress=git.RemoteProgress())
-    return "hiho"
+    if os.path.exists(gitdir):
+        print("URL {!r} alread cloned, using {!r}.".format(url, gitdir))
+        return git.repo.Repo(gitdir)
+
+    print("%s: Cloning url=%r to %r" % (current_thread().name, url, gitdir))
+    repo = git.Repo.clone_from(url, gitdir)
+    return repo
 
 
 def worker(urls, tmpdir, jobs=1):  # pragma: no cover
@@ -47,6 +61,7 @@ def worker(urls, tmpdir, jobs=1):  # pragma: no cover
     :param int jobs: integer number of workers to create [default: 1]
     """
     print("Calling worker...")
+    q = queue.Queue()
     start = time()
     with ThreadPoolExecutor(max_workers=jobs) as executor:
         future_to_url = {executor.submit(clone_repo, url, tmpdir): url for url in urls}
@@ -54,9 +69,17 @@ def worker(urls, tmpdir, jobs=1):  # pragma: no cover
             url = future_to_url[future]
             try:
                 data = future.result()
+                q.put(data)
+            # TODO: Make exceptions more explicit
             except Exception as exc:
                 print('%r generated an exception: %s' % (url, exc))
             else:
-                print('%r page is %d bytes' % (url, len(data)))
+                print('Got from URL %r: %s' % (url, data))
+
     end = time()
     print("Finished worker. Time={:.1f}".format(float(end - start)))
+    print("Queue:", q)
+    while not q.empty():
+        print("Queue item: %s" % (q.get(),))
+
+    return q
