@@ -1,7 +1,18 @@
 import pytest
 from unittest.mock import patch
 
-from docstats.utils import git_urlparse, http_urlparse, gettmpdir
+from docstats.utils import git_urlparse, http_urlparse, gettmpdir, urlparse
+
+
+@pytest.mark.parametrize('url,expected', [
+    #
+    ('git@Foo-bar.com:X-Z/A-b.git', {'domain': 'X-Z', 'repo': 'A-b', 'server': 'Foo-bar.com', 'user': 'git'}),
+    #
+    ('http://github.com/X/Y',
+     {'domain': 'X', 'repo': 'Y', 'server': 'github.com', 'user': None}),
+])
+def test_urlparse(url, expected):
+    assert urlparse(url) == expected
 
 
 # Matches any URL with USER@SERVER:DOMAIN/REPO.git

@@ -18,7 +18,7 @@
 
 import re
 import os
-from urllib.parse import urlparse
+import urllib.parse
 
 
 __all__ = ('git_urlparse', 'tmpdir')
@@ -31,16 +31,25 @@ _GITURL_RE = re.compile(r'(?P<user>[\w\._-]+)@'
 _GITDOMAIN_REPO_RE = re.compile(r'(?P<domain>[\w\._-]+)/(?P<repo>[\w_-]+)')
 
 
-def http_urlparse(url):
-    """
-
-def http_urlparse(url):
-    """Parse Git HTTP(S) URls
+def urlparse(url):
+    """Parse Git URL, either git@server:domain/repo.git or http://server/domain/repo
 
     :param url:
     :return:
     """
-    pr = urlparse(url)
+    if url.startswith('git@'):
+        return git_urlparse(url)
+    else:
+        return http_urlparse(url)
+
+
+def http_urlparse(url):
+    """Parse Git HTTP(S) URls
+
+    :param url: The URL starting usually with http:// or https://
+    :return:
+    """
+    pr = urllib.parse.urlparse(url)
     groupdict = {'user': None, 'server': pr.netloc}
     match =_GITDOMAIN_REPO_RE.search(pr.path)
     if match is None:
