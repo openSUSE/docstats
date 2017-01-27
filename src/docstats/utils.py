@@ -17,8 +17,9 @@
 #
 
 import re
+import os
 
-__all__ = ('git_urlparse', )
+__all__ = ('git_urlparse', 'tmpdir')
 
 _GITURL_RE = re.compile(r'(?P<user>[\w\._-]+)@'
                         r'(?P<server>[\w\._-]+):'
@@ -41,3 +42,22 @@ def git_urlparse(url):
         # this should not happen...
         raise ValueError('Could not find any matching parts in your Git URL: %r' % url)
     return match.groupdict()
+
+
+def gettmpdir(path):
+    """Constructs the string of a temporary path and replaces any variables in this string
+
+    For example, if you have "/tmp/foo-$USER" and the current user is "tux", then it will return
+    "/tmp/foo-tux"
+
+    Current supported variables are: USER, LANG, HOSTNAME
+    If an environment variable is not set, it will evaluate to an empty string.
+
+    :param path: a path with or without any "shell" variables
+    :return: the replaced string
+    :rtype: str
+    """
+    for var in ('USER', 'LANG', 'HOSTNAME'):
+        replaceable = os.environ.get(var, '')
+        path = path.replace("${}".format(var), replaceable)
+    return path

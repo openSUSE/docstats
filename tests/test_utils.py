@@ -1,6 +1,7 @@
 import pytest
+from unittest.mock import patch
 
-from docstats.utils import git_urlparse
+from docstats.utils import git_urlparse, gettmpdir
 
 
 # Matches any URL with USER@SERVER:DOMAIN/REPO.git
@@ -21,3 +22,18 @@ from docstats.utils import git_urlparse
 ])
 def test_git_urlparse(url, expected):
     assert git_urlparse(url) == expected
+
+
+@pytest.mark.parametrize('path,expected', [
+    ('foo',                       'foo'),
+    ('foo-$NOT_THERE',            'foo-$NOT_THERE'),
+    ('foo-$USER',                 'foo-tux'),
+    ('foo-$HOSTNAME',             'foo-myhost'),
+    ('foo-$LANG',                 'foo-en'),
+    ('foo-$USER-$LANG',           'foo-tux-en'),
+    ('foo-$USER-$LANG-$HOSTNAME', 'foo-tux-en-myhost'),
+
+])
+def test_tmpdir(path, expected):
+    with patch.dict('os.environ', {'HOSTNAME': 'myhost', 'USER': 'tux', 'LANG': 'en'}):
+        assert gettmpdir(path) == expected
