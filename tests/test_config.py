@@ -3,7 +3,8 @@ import py
 
 from docstats.config import parseconfig, geturls
 
-# Our global variable which is used in our configuration parser
+# Our global variables which is used in our configuration parser
+# will be overwritten bei setup_module()
 config = None
 tmpdir = None
 tmpfile = None
