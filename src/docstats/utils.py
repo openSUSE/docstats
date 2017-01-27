@@ -20,18 +20,24 @@ import re
 
 __all__ = ('git_urlparse', )
 
-GITURL_RE = re.compile(r'git@(?P<server>[a-zA-Z\._]+):(?P<domain>\w+)/(?P<repo>\w+).git')
+_GITURL_RE = re.compile(r'(?P<user>[\w\._-]+)@'
+                        r'(?P<server>[\w\._-]+):'
+                        r'(?P<domain>[\w\._-]+)/'
+                        r'(?P<repo>[\w\._-]+).git')
 
 
 def git_urlparse(url):
     """Parse Git URLs
 
     :param str url: the Git(Hub) URL
-    :return:
+    :return: a dict; if you pass the url "git@github.com:x/y.git" you will get the content
+            {'domain': 'x', 'repo': 'y', 'server': 'github.com'}
     """
-    if not url.startswith('git@'):
-        return {}
-    match = GITURL_RE.search(url)
+    # HINT: Unfortunately, urllib.parse.urlparse cannot be used :-( therefore we use regexes:
+    # >>> urllib.parse.urlparse('git@github.com:x/y.git')
+    # ParseResult(scheme='', netloc='', path='git@github.com:x/y.git', params='', query='', fragment='')
+    match = _GITURL_RE.search(url)
     if match is None:
+        # this should not happen...
         raise ValueError('Could not find any matching parts in your Git URL: %r' % url)
     return match.groupdict()
