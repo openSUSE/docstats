@@ -21,7 +21,7 @@ import os
 import urllib.parse
 
 
-__all__ = ('git_urlparse', 'tmpdir')
+__all__ = ('findbugid', 'findcommits', 'git_urlparse', 'http_urlparse', 'tmpdir', 'urlparse',)
 
 
 #: For parsing GitHub URLs
@@ -48,6 +48,22 @@ _GITURL_REGEX = re.compile(r'(?P<user>{user}+)@'
 _GITDOMAIN_REPO_REGEX = re.compile(_DOMAIN_REPO_REGEX)
 
 #:
+#: For parsing text with bug fix information
+_BUGTRACKER_REGEXES = (
+    # see https://help.github.com/articles/closing-issues-via-commit-messages/
+    re.compile(r'(?P<github>fix(?:es|ed)?|'
+               r'close[sd]?|'
+               r'resolve[sd]?)'
+               r'(?:\s+(?:for))?'
+               r'\s?#(?P<id>\d{1,9})', re.IGNORECASE),
+    # see https://en.opensuse.org/openSUSE:Creating_a_changes_file_(RPM)#Bug_fix.2C_feature_implementation
+    # https://en.opensuse.org/openSUSE:Packaging_Patches_guidelines#Current_set_of_abbreviations
+    re.compile(r'(?P<bugtracker>bsc|bnc|boo|[fF]ate|FATE)'
+               r'\s?#(?P<id>\d{2,9})'),
+    # CVE
+    re.compile(r'(CVE)-(?P<cve>\d{4}-\d{4,7})'),
+    #
+)
 
 
 def urlparse(url):
@@ -121,3 +137,55 @@ def gettmpdir(path):
         replaceable = os.environ.get(var, '')
         path = path.replace("${}".format(var), replaceable)
     return path
+
+
+def findbugid(text):
+    """Find Bugzilla IDs, GitHub, Fate, and CVEs
+
+    :param text: the text containing bug information IDs
+    :return: a list of tuples of all found bug IDs; each item has the format (type, value)
+    :rtype: list
+    """
+
+    def _github(m):
+        # "normalize" the text part of the match
+        return [(text.lower(), number) for text, number in m]
+
+    def _bugtracker(m):
+        # we reuse the function from _github which just make the text
+        # lowercase
+        return _github(m)
+
+    def _cve(m):
+        # don't change anything for CVE entries
+        return m
+
+    # Order must match the regexes in _BUGTRACKER_REGEXES
+    functions = [_github, _bugtracker, _cve]
+
+    result = [ ]
+    # Iterate through all possible regexes and deliver a tuple of
+    # (regex, func). The "func" part is used to "cleanup" the matching
+    for regex, func in zip(_BUGTRACKER_REGEXES, functions):
+        match = regex.findall(text)
+        if match is not None:
+            # cleanup
+            result.extend(func(match))
+
+    return result
+
+
+def findcommits(text):
+    """Find commit hashes in text
+
+    :param text: the text with possible commit hashes
+    :return: a list of all found commit hashes
+    """
+    _COMMIT_HASH_REGEX = re.compile(r'(?P<commit>[cC]ommit)?'
+                                    r'\s?[#]?'
+                                    r'\b(?P<id>[0-9a-f]{5,40})\b')
+    match = _COMMIT_HASH_REGEX.findall(text)
+    if match:
+        return [(text if text else 'commit', number) for text, number in match]
+    else:
+        return []
