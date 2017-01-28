@@ -60,7 +60,7 @@ def requires(filename):
 
 # -----------------------------------------------------------------------------
 setup(
-    name='suse-docstats',
+    name='docstats',
     version='0.1.0',
     license='BSD',
     description='Statistics and Metrics for Documentation Team',

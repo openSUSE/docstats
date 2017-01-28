@@ -3,17 +3,24 @@ import py
 
 from docstats.config import parseconfig, geturls
 
-# Our global variable which is used in our configuration parser
+# Our global variables which is used in our configuration parser
+# will be overwritten bei setup_module()
 config = None
+tmpdir = None
+tmpfile = None
 
 
 def setup_module(module):
     if config is not None:
         return
 
-    tmpdir = py.path.local('/tmp/pytest/').mkdir('config')
-    tmpfile = tmpdir / "docstats.ini"
-    tmpfile.write("""[globals]
+    try:
+        module.tmpdir = py.path.local('/tmp').mkdtemp()
+
+    except py.error.EEXIST:
+        module.tmpdir = py.path.local('/tmp/pytest/config')
+    module.tmpfile = tmpdir / "docstats.ini"
+    module.tmpfile.write("""[globals]
 branch = develop
 
 [doc-a]
@@ -30,8 +37,7 @@ url =
 
 
 def teardown_module(module):
-    tmpdir = py.path.local('/tmp/pytest/config')
-    tmpdir.remove(ignore_errors=True)
+    module.tmpdir.remove(ignore_errors=True)
 
 
 # --------------------------------------------------------
