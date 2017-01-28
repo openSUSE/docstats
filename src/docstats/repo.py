@@ -68,6 +68,7 @@ def analyze(queue, config):
         # datetime.fromtimestamp(commit.committed_date)
         for item in commit.stats.total:
             stats[item] += commit.stats.total[item]
+
         # print(idx, commit.summary)
     print("-"*10)
     print(">> Commits:", idx)

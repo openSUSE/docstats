@@ -25,20 +25,20 @@ import os.path
 # import pygit2
 import git
 
-
+from .config import geturls
 from .utils import urlparse
 
 
-
-def clone_repo(url, tmpdir):
+def clone_repo(section, url, tmpdir):
     """Clone the Git repository
 
+    :param str section: the section from the configuration file
     :param str url: the URL of the Git repository
     :param str tmpdir: the temporary directory to clone to
     :return: ???
     """
-    urldict = urlparse(url)
-    gitdir = os.path.join(tmpdir, urldict['repo'])
+    # urldict = urlparse(url)
+    gitdir = os.path.join(tmpdir, section)
 
     if os.path.exists(gitdir):
         print("URL {!r} alread cloned, using {!r}.".format(url, gitdir))
@@ -53,19 +53,22 @@ def clone_repo(url, tmpdir):
     return repo
 
 
-def worker(urls, tmpdir, jobs=1):  # pragma: no cover
+def worker(config, basedir, jobs=1):  # pragma: no cover
     """Working off all Git URLs
 
-    :param urls: a list or generator of urls
-    :param str tmpdir: the  temporary directory to clone to
+    :param config: a list or generator of urls
+    :type config: :class:`configparser.ConfigParser`
     :param int jobs: integer number of workers to create [default: 1]
     """
     # See also: http://www.codekoala.com/posts/command-line-progress-bar-python/
     print("Calling worker...")
     q = queue.Queue()
+
+    urls = geturls(config)
+
     start = time()
     with ThreadPoolExecutor(max_workers=jobs) as executor:
-        future_to_url = {executor.submit(clone_repo, url, tmpdir): url for url in urls}
+        future_to_url = {executor.submit(clone_repo, section, url, basedir): url for section, url in urls}
         for future in as_completed(future_to_url):
             url = future_to_url[future]
             try:

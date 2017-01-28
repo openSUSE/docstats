@@ -49,9 +49,9 @@ def geturls(config):
 
     :param config: a :class:`configparser.ConfigParser` instance
     :type config: :class:`configparser.ConfigParser`
-    :return: yields the URL string
+    :return: yields a tuple in the format (section, URL)
     :rtype: generator
     """
-    for  sec in config.sections():
+    for sec in config.sections():
         if config.get(sec, 'url', fallback=None) != '':
-            yield config[sec]['url']
+            yield sec, config[sec]['url']

@@ -38,13 +38,13 @@ def main(cliargs=None):
         print(args)
         print(config)
         # ----
-        #print("Sections found:", config.sections())
-        #print("branch", config['doc-slert']['branch'])
-        #print("url", config['doc-slert']['url'])
+        # print("Sections found:", config.sections())
+        # print("branch", config['doc-slert']['branch'])
+        # print("url", config['doc-slert']['url'])
         # ----
-        tmpdir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
-        os.makedirs(tmpdir, exist_ok=True)
-        queue = worker(geturls(config), tmpdir, jobs=args['--jobs'])
+        basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
+        os.makedirs(basedir, exist_ok=True)
+        queue = worker(config, basedir, jobs=args['--jobs'])
         analyze(queue, config)
 
     except (FileNotFoundError, OSError) as error:

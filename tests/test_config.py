@@ -6,6 +6,7 @@ from docstats.config import parseconfig, geturls
 # Our global variables which is used in our configuration parser
 # will be overwritten bei setup_module()
 config = None
+configfiles = None
 tmpdir = None
 tmpfile = None
 
@@ -33,7 +34,7 @@ url = git://doc-b.git
 url =
         """)
     # module is our global scope
-    module.config = parseconfig(tmpfile.strpath)[1]
+    module.configfiles, module.config = parseconfig(tmpfile.strpath)
 
 
 def teardown_module(module):
@@ -41,6 +42,9 @@ def teardown_module(module):
 
 
 # --------------------------------------------------------
+def test_config_files():
+    assert len(configfiles) == 1
+
 def test_config_global():
     assert config['globals']
 
@@ -58,4 +62,4 @@ def test_config_url():
 def test_geturls():
     urls = list(geturls(config))
     assert len(urls) == 2
-    assert urls == ['git://doc-a.git', 'git://doc-b.git']
+    assert urls == [('doc-a', 'git://doc-a.git'), ('doc-b', 'git://doc-b.git')]
