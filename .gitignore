@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+# Backup files
+*~
+~.bak
+*.swp
+
 # Distribution / packaging
 .Python
 env/
