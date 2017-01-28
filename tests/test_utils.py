@@ -110,7 +110,23 @@ def test_findbugid_github(text, expected):
     assert findbugid(text) == expected
 
 
+
 @pytest.mark.parametrize('text,expected', [
+    #
+    ('the quick brown fox', []),
+    #
+    ('Closes tux/example_repo#76', [('closes', 'tux', 'example_repo', '76')]),
+    #
+    ('Closes Tux/Example_Repo#76', [('closes', 'tux', 'example_repo', '76')]),
+])
+def test_findbugid_extern_github(text, expected):
+    # Just for GitHub issues
+    assert findbugid(text) == expected
+
+
+@pytest.mark.parametrize('text,expected', [
+    #
+    ('the quick brown fox', []),
     # For different bugtracker issues
     ('bsc#12345', [('bsc', '12345')]),
     #
@@ -131,6 +147,8 @@ def test_findbugid_bugtracker(text, expected):
 
 @pytest.mark.parametrize('text,expected', [
     #
+    ('the quick brown fox', []),
+    #
     ('CVE-2017-1234', [('CVE', '2017-1234')]),
     #
 ])
@@ -140,6 +158,8 @@ def test_findbugid_cve(text, expected):
 
 
 @pytest.mark.parametrize('text,expected', [
+    #
+    ('the quick brown fox', []),
     #
     ('commit de9ddf8', [('commit', 'de9ddf8')]),
     #

@@ -56,6 +56,15 @@ _BUGTRACKER_REGEXES = (
                r'resolve[sd]?)'
                r'(?:\s+(?:for))?'
                r'\s?#(?P<id>\d{1,9})', re.IGNORECASE),
+
+    # external GitHub repositories
+    re.compile(r'(?P<github>[fF]ix(?:es|ed)?|' + \
+               r'[cC]lose[sd]?|' + \
+               r'[rR]esolve[sd]?)' + \
+               r'\s?' + \
+               r'%s#(?P<id>\d{1,9})' % _DOMAIN_REPO_REGEX
+    ),
+
     # see https://en.opensuse.org/openSUSE:Creating_a_changes_file_(RPM)#Bug_fix.2C_feature_implementation
     # https://en.opensuse.org/openSUSE:Packaging_Patches_guidelines#Current_set_of_abbreviations
     re.compile(r'(?P<bugtracker>bsc|bnc|boo|[fF]ate|FATE)'
@@ -151,6 +160,10 @@ def findbugid(text):
         # "normalize" the text part of the match
         return [(text.lower(), number) for text, number in m]
 
+    def _ext_github(m):
+        # "normalize" the text, domain, and repo part of the match
+        return [(text.lower(), middle[0].lower(), middle[1].lower(), number) for text, *middle, number in m]
+
     def _bugtracker(m):
         # we reuse the function from _github which just make the text
         # lowercase
@@ -161,7 +174,7 @@ def findbugid(text):
         return m
 
     # Order must match the regexes in _BUGTRACKER_REGEXES
-    functions = [_github, _bugtracker, _cve]
+    functions = [_github, _ext_github, _bugtracker, _cve]
 
     result = [ ]
     # Iterate through all possible regexes and deliver a tuple of
@@ -180,6 +193,7 @@ def findcommits(text):
 
     :param text: the text with possible commit hashes
     :return: a list of all found commit hashes
+    :rtype: list
     """
     _COMMIT_HASH_REGEX = re.compile(r'(?P<commit>[cC]ommit)?'
                                     r'\s?[#]?'
