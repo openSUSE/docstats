@@ -24,11 +24,30 @@ import urllib.parse
 __all__ = ('git_urlparse', 'tmpdir')
 
 
-_GITURL_RE = re.compile(r'(?P<user>[\w\._-]+)@'
-                        r'(?P<server>[\w\._-]+):'
-                        r'(?P<domain>[\w\._-]+)/'
-                        r'(?P<repo>[\w\._-]+)\.git')
-_GITDOMAIN_REPO_RE = re.compile(r'(?P<domain>[\w\._-]+)/(?P<repo>[\w_-]+)')
+#: For parsing GitHub URLs
+_BASE_REGEX = r'[\w\._-]'
+_USER_REGEX = _BASE_REGEX
+_SERVER_REGEX = _USER_REGEX
+_DOMAIN_REGEX = _USER_REGEX
+_REPO_REGEX = _USER_REGEX
+_DOMAIN_REPO_REGEX = (r'(?P<domain>{domain}+)/'
+                      r'(?P<repo>{repo}+)'
+                      r''.format(domain=_DOMAIN_REGEX,
+                                 repo=_REPO_REGEX,
+                                 )
+                      )
+_GITURL_REGEX = re.compile(r'(?P<user>{user}+)@'
+                        r'(?P<server>{server}+):'
+                        r'{domainrepo}+'
+                        r''.format(user=_USER_REGEX,
+                                   server=_SERVER_REGEX,
+                                   domainrepo=_DOMAIN_REPO_REGEX,
+                                   )
+                           )
+
+_GITDOMAIN_REPO_REGEX = re.compile(_DOMAIN_REPO_REGEX)
+
+#:
 
 
 def urlparse(url):
@@ -37,6 +56,8 @@ def urlparse(url):
     :param url:
     :return:
     """
+    if url.endswith('.git'):
+        url = url[:-4]
     if url.startswith('git@'):
         return git_urlparse(url)
     else:
@@ -51,7 +72,9 @@ def http_urlparse(url):
     """
     pr = urllib.parse.urlparse(url)
     groupdict = {'user': None, 'server': pr.netloc}
-    match =_GITDOMAIN_REPO_RE.search(pr.path)
+    path = pr.path[:-4] if pr.path.endswith('.git') else pr.path
+
+    match =_GITDOMAIN_REPO_REGEX.search(path)
     if match is None:
         # this should not happen...
         raise ValueError('Could not find any matching parts in your Git URL: %r' % url)
@@ -69,7 +92,11 @@ def git_urlparse(url):
     # HINT: Unfortunately, urllib.parse.urlparse cannot be used :-( therefore we use regexes:
     # >>> urllib.parse.urlparse('git@github.com:x/y.git')
     # ParseResult(scheme='', netloc='', path='git@github.com:x/y.git', params='', query='', fragment='')
-    match = _GITURL_RE.search(url)
+
+    # Cuts off ".git" ending
+    if url.endswith('.git'):
+        url = url[:-4]
+    match = _GITURL_REGEX.search(url)
     if match is None:
         # this should not happen...
         raise ValueError('Could not find any matching parts in your Git URL: %r' % url)
