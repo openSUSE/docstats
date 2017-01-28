@@ -53,7 +53,7 @@ def clone_repo(section, url, tmpdir):
     return repo
 
 
-def worker(config, basedir, jobs=1):  # pragma: no cover
+def cloner(config, basedir, jobs=1):  # pragma: no cover
     """Working off all Git URLs
 
     :param config: a list or generator of urls

@@ -20,7 +20,7 @@ from .cli import parsecli
 from .config import parseconfig, geturls
 from .repo import analyze
 from .utils import gettmpdir
-from .worker import worker
+from .worker import cloner
 
 import os
 
@@ -44,7 +44,7 @@ def main(cliargs=None):
         # ----
         basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
         os.makedirs(basedir, exist_ok=True)
-        queue = worker(config, basedir, jobs=args['--jobs'])
+        queue = cloner(config, basedir, jobs=args['--jobs'])
         analyze(queue, config)
 
     except (FileNotFoundError, OSError) as error:
