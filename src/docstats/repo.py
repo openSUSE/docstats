@@ -45,10 +45,10 @@ def analyze(queue, config):
     :type config: :class:`configparser.ConfigParser`
     :return:
     """
-    while not queue.empty():
-        repo = queue.get()
-        if repo.working_dir.count("sleha"):
-            break
+    # while not queue.empty():
+    #    repo = queue.get()
+    #    if repo.working_dir.count("sleha"):
+    #        break
 
     target = repo.heads[0]
     roottree = repo.tree(target)
