@@ -36,7 +36,7 @@
 from collections import Counter, defaultdict
 
 
-def analyze(queue, config):
+def analyze(repo, config):
     """Analyze the repositories given at queue
 
     :param queue: a queue
@@ -74,3 +74,5 @@ def analyze(queue, config):
     print(">> Commits:", idx)
     print(">> Committers:", committers.most_common(5))
     print(">> Stats:", stats)
+
+    return committers, stats

@@ -120,16 +120,16 @@ class Producer(object):
     """A Task class to create repositories
 
     """
-    def __init__(self, section, url, tmpdir, id):
+    def __init__(self, section, url, config, tmpdir, id):
         self.section = section
         self.url = url
         self.tmpdir = tmpdir
         self.id = id
+        self.config = config
 
     def __call__(self):
         repo = clone_repo(self.section, self.url, self.tmpdir)
-        analyze(queue, config)
-        return
+        return analyze(repo, self.config)
 
     def __repr__(self):
         return "%s(%i): [%s] %r" % (type(self).__name__, self.id, self.section, self.url)
@@ -168,7 +168,7 @@ def work(config, basedir, jobs=1):
 
     # for i in range(num_jobs):
     for idx, securl in enumerate(urls):
-        tasks.put(Producer(*securl, tmpdir=basedir, id=idx))
+        tasks.put(Producer(*securl, config=config, tmpdir=basedir, id=idx))
 
     # Add a poison pill for each consumer
     for i in range(jobs):
