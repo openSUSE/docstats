@@ -28,7 +28,8 @@ import os.path
 import git
 
 from .config import geturls
-from .utils import urlparse
+# from .utils import urlparse
+from .repo import analyze
 
 
 def clone_repo(section, url, tmpdir):
