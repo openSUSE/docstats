@@ -16,23 +16,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import multiprocessing
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from threading import current_thread
-from time import sleep, time
+from time import time
 import queue
-from queue import Empty
 import os.path
 
-# import pygit2
+
 import git
 
 from .config import geturls
-# from .utils import urlparse
 from .repo import analyze
 
 
-def clone_repo(section, url, tmpdir):
+def clone_repo(url, gitdir):
     """Clone the Git repository
 
     :param str section: the section from the configuration file
@@ -40,8 +37,6 @@ def clone_repo(section, url, tmpdir):
     :param str tmpdir: the temporary directory to clone to
     :return: ???
     """
-    # urldict = urlparse(url)
-    gitdir = os.path.join(tmpdir, section)
 
     if os.path.exists(gitdir):
         print("URL {!r} alread cloned, using {!r}.".format(url, gitdir))
@@ -90,52 +85,18 @@ def cloner(config, basedir, jobs=1):  # pragma: no cover
 
 # ---------------------------------------------------------------------
 
-class Consumer(multiprocessing.Process):
-    """A consumer class which take care of the distributed work
+def clone_and_analyze(url, gitdir, config):
+    """Clone the GitHub repo and analyze it
 
+    :param url: the GitHub URL to clone
+    :param gitdir: the path to the temporary directory (including the section)
+    :param config:
+    :type config: :class:`configparser.ConfigParser`
+    :return:
     """
-    def __init__(self, task_queue, result_queue):
-        # multiprocessing.Process.__init__(self)
-        super().__init__()
-        self.task_queue = task_queue
-        self.result_queue = result_queue
+    repo = clone_repo(url, gitdir)
+    return analyze(repo, config)
 
-    def run(self):
-        proc_name = self.name
-        while True:
-            next_task = self.task_queue.get()
-            if next_task is None:
-                # Poison pill means shutdown
-                print('%s: Exiting' % proc_name)
-                self.task_queue.task_done()
-                break
-            print('%s: %s' % (proc_name, next_task))
-            answer = next_task()
-            self.task_queue.task_done()
-            self.result_queue.put(answer)
-        return
-
-
-class Producer(object):
-    """A Task class to create repositories
-
-    """
-    def __init__(self, section, url, config, tmpdir, id):
-        self.section = section
-        self.url = url
-        self.tmpdir = tmpdir
-        self.id = id
-        self.config = config
-
-    def __call__(self):
-        repo = clone_repo(self.section, self.url, self.tmpdir)
-        return analyze(repo, self.config)
-
-    def __repr__(self):
-        return "%s(%i): [%s] %r" % (type(self).__name__, self.id, self.section, self.url)
-
-    def __str__(self):
-        return '%s' % self.url
 
 
 def work(config, basedir, jobs=1):
@@ -147,41 +108,27 @@ def work(config, basedir, jobs=1):
     :return: ???
     """
     # Establish communication queues
-    tasks = multiprocessing.JoinableQueue()
-    results = multiprocessing.Queue()
-
-    urls = list(geturls(config))
-    if jobs > len(urls):
-        # Make sure you have not more consumers than sections in our config file
-        jobs = len(urls)
-
-    # Start consumers
-    print('Creating %d consumers' % jobs)
-    consumers = [Consumer(tasks, results) for _ in range(jobs)]
+    q = queue.Queue()
+    urls = geturls(config)
 
     start = time()
-    for w in consumers:
-        w.start()
-
-    # Enqueue jobs
-    num_jobs = jobs
-
-    # for i in range(num_jobs):
-    for idx, securl in enumerate(urls):
-        tasks.put(Producer(*securl, config=config, tmpdir=basedir, id=idx))
-
-    # Add a poison pill for each consumer
-    for i in range(jobs):
-        tasks.put(None)
-
-    # Wait for all of the tasks to finish
-    tasks.join()
-
-    # Start printing results
-    while num_jobs:
-        result = results.get()
-        print('Result:', result)
-        num_jobs -= 1
+    with ProcessPoolExecutor(max_workers=jobs) as executor:
+        future_to_url = {executor.submit(clone_and_analyze,
+                                         url,
+                                         os.path.join(basedir, section),
+                                         config
+                                         ): url for section, url in urls}
+        for future in as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                data = future.result()
+                q.put(data)
+            # TODO: Make exceptions more explicit
+            except Exception as exc:
+                print('%r generated an exception: %s' % (url, exc))
+            else:
+                print('Got from URL %r: %s' % (url, data))
 
     end = time()
-    print("Finished.", end-start)
+    print("Finished worker. Time={:.1f}".format(float(end - start)))
+    return
