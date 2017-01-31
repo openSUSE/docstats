@@ -16,8 +16,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
-from threading import current_thread
+from concurrent.futures import ProcessPoolExecutor, as_completed
+# from threading import current_thread
 from time import time
 import queue
 import os.path
@@ -43,47 +43,13 @@ def clone_repo(url, gitdir):
         # return pygit2.Repository(gitdir)
         return git.Repo(gitdir)
 
-    print("%s: Cloning url=%r to %r" % (current_thread().name, url, gitdir))
+    # print("%s: Cloning url=%r to %r" % (current_thread().name, url, gitdir))
     start = time()
     repo = git.Repo.clone_from(url, gitdir)
     # repo = pygit2.clone_repository(url, gitdir )  # pygit2.UserPass('', '')
     end = time()
     return repo
 
-
-def cloner(config, basedir, jobs=1):  # pragma: no cover
-    """Working off all Git URLs
-
-    :param config: a list or generator of urls
-    :type config: :class:`configparser.ConfigParser`
-    :param int jobs: integer number of workers to create [default: 1]
-    """
-    # See also: http://www.codekoala.com/posts/command-line-progress-bar-python/
-    print("Calling worker...")
-    q = queue.Queue()
-
-    urls = geturls(config)
-
-    start = time()
-    with ThreadPoolExecutor(max_workers=jobs) as executor:
-        future_to_url = {executor.submit(clone_repo, section, url, basedir): url for section, url in urls}
-        for future in as_completed(future_to_url):
-            url = future_to_url[future]
-            try:
-                data = future.result()
-                q.put(data)
-            # TODO: Make exceptions more explicit
-            except Exception as exc:
-                print('%r generated an exception: %s' % (url, exc))
-            else:
-                print('Got from URL %r: %s' % (url, data))
-
-    end = time()
-    print("Finished worker. Time={:.1f}".format(float(end - start)))
-    print("Queue:", q)
-    return q
-
-# ---------------------------------------------------------------------
 
 def clone_and_analyze(url, gitdir, config):
     """Clone the GitHub repo and analyze it
