@@ -45,17 +45,12 @@ def analyze(repo, config):
     :type config: :class:`configparser.ConfigParser`
     :return:
     """
-    # while not queue.empty():
-    #    repo = queue.get()
-    #    if repo.working_dir.count("sleha"):
-    #        break
 
     target = repo.heads[0]
-    roottree = repo.tree(target)
 
-    print("Repo:", repo)
+    print("Repo:", repo.git_dir)
     print("Target:", target)
-    print("RootTree:", roottree)
+    # print("RootTree:", roottree)
     # print("dir", dir(repo))
 
     committers = Counter()
@@ -73,6 +68,6 @@ def analyze(repo, config):
     print("-"*10)
     print(">> Commits:", idx)
     print(">> Committers:", committers.most_common(5))
-    print(">> Stats:", stats)
+    print(">> Stats for %r:" % repo.git_dir, stats)
 
     return committers, stats
