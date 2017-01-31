@@ -25,7 +25,7 @@ def gitrepo():
 
 
 def test_clone_repo_if_path_exists(gitrepo):
-    repo = clone_repo(SECTION, 'fake-url', PYTESTTMPDIR)
+    repo = clone_repo('fake-url', os.path.join(PYTESTTMPDIR, SECTION))
     assert repo.git_dir == GITREPO.git_dir
 
 
@@ -34,5 +34,5 @@ def test_clone_repo_if_path_exists(gitrepo):
 def test_clone_repo(mock_repo, mock_path):
     mock_repo.clone_from = Mock(return_value=GITREPO)
     mock_path.return_value = False
-    repo = clone_repo(SECTION, 'fake-url', PYTESTTMPDIR)
+    repo = clone_repo('fake-url', os.path.join(PYTESTTMPDIR, SECTION))
     assert repo.git_dir == GITREPO.git_dir
