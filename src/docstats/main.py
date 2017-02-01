@@ -18,7 +18,7 @@
 
 from .cli import parsecli
 from .config import parseconfig, geturls
-from .repo import analyze
+from configparser import DuplicateSectionError, DuplicateOptionError
 from .utils import gettmpdir
 from .worker import work
 
@@ -47,6 +47,10 @@ def main(cliargs=None):
         # queue = cloner(config, basedir, jobs=args['--jobs'])
         work(config, basedir, sections=args['--section'], jobs=args['--jobs'])
         # analyze(queue, config)
+
+    except (DuplicateSectionError, DuplicateOptionError) as error:
+        print(error)
+        return 20
 
     except (FileNotFoundError, OSError) as error:
         print(error)
