@@ -75,7 +75,6 @@ def test_geturls():
 
 def test_getbranches():
     branches = list(getbranches('doc-b', config))
-    print("from config:", repr(config.get('doc-b', 'branches')))
     expected = [('maint/a',  '',     ''),
                 ('maint/b',  'abce', ''),
                 ('maint/c',  '',     'f123'),
@@ -84,8 +83,6 @@ def test_getbranches():
                 ]
     assert branches
     assert len(branches) == 5
-    print("\n>> branches\n", branches, "\n", expected)
-
     assert branches == expected
 
 
