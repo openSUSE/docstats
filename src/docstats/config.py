@@ -61,15 +61,15 @@ def getbranchparts(string):
     """Generator: Yields its branch name and optional start/end dates from a string
 
     For example:
-    >>> list(getbranch('maintenance/SLE12'))
+    >>> list(getbranchparts('maintenance/SLE12'))
     [('maintenance/SLE12', '', '')]
-    >>> list(getbranch('maintenance/SLE12   abc'))
+    >>> list(getbranchparts('maintenance/SLE12   abc'))
     [('maintenance/SLE12', 'abc', '')]
-    >>> list(getbranch('maintenance/SLE12   abc..'))
+    >>> list(getbranchparts('maintenance/SLE12   abc..'))
     [('maintenance/SLE12', 'abc', '')]
-    >>> list(getbranch('maintenance/SLE12   ..abc'))
+    >>> list(getbranchparts('maintenance/SLE12   ..abc'))
     [('maintenance/SLE12', '', 'abc')]
-    >>> list(getbranch('maintenance/SLE12   abc..def'))
+    >>> list(getbranchparts('maintenance/SLE12   abc..def'))
     [('maintenance/SLE12', 'abc', 'def')]
 
     :param string: a string in the format "BRANCHNAME [[START][..][END]]
