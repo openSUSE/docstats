@@ -37,6 +37,7 @@ branches =
     maint/c  ..f123
     maint/d  abce..
     maint/e  1234..345a
+    # maint/f  1234..56789
 
 [doc-c]
 url =

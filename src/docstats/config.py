@@ -111,4 +111,7 @@ def getbranches(section, config):
         raise StopIteration
 
     for branch in branches.strip().split("\n"):
+        branch = branch.strip()
+        if branch.startswith('#'):
+            continue
         yield from getbranchparts(branch)
