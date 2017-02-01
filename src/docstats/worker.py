@@ -65,11 +65,13 @@ def clone_and_analyze(url, gitdir, config):
 
 
 
-def work(config, basedir, jobs=1):
+def work(config, basedir, sections=None, jobs=1):
     """Working off all Git URLs
 
     :param config: a list or generator of urls
     :type config: :class:`configparser.ConfigParser`
+    :param str basedir: the temporary base directory
+    :param section: the section to use
     :param int jobs: integer number of workers to create [default: 1]
     :return: ???
     """

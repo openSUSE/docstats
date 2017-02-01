@@ -73,7 +73,7 @@ _BUGTRACKER_REGEXES = (
 
     # see https://en.opensuse.org/openSUSE:Creating_a_changes_file_(RPM)#Bug_fix.2C_feature_implementation
     # https://en.opensuse.org/openSUSE:Packaging_Patches_guidelines#Current_set_of_abbreviations
-    re.compile(r'(?P<bugtracker>bsc|bnc|boo|[fF]ate|FATE)'
+    re.compile(r'(?P<bugtracker>bsc|bnc|boo|[fF]ate|FATE|[tT]rello|TRELLO)'
                r'\s?#(?P<id>\d{2,9})'),
     # CVE
     re.compile(r'(CVE)-(?P<cve>\d{4}-\d{4,7})'),

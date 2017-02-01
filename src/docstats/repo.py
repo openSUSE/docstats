@@ -48,11 +48,17 @@ def analyze(repo, config):
     :rtype: dict
     """
 
+    result = {}
     target = repo.heads[0]
     wd = repo.working_tree_dir
     section = wd.rsplit("/", 1)[-1]
+    committers = Counter()
+    stats = defaultdict(int)
 
-    for branchname, start, end in getbranches(section, config):
+    for branchname, start, end in getbranches(config.get(section,
+                                                         'branches',
+                                                         fallback=None)
+                                              ):
         try:
             repo.git.checkout(branchname)
         except GitCommandError as error:
@@ -73,8 +79,7 @@ def analyze(repo, config):
     # print("RootTree:", roottree)
     # print("dir", dir(repo))
 
-    committers = Counter()
-    stats = defaultdict(int)
+
     # additions = 0
     # deletions = 0
     # files = 0
