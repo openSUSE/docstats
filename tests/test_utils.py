@@ -1,7 +1,14 @@
 import pytest
 from unittest.mock import patch
 
-from docstats.utils import git_urlparse, http_urlparse, gettmpdir, urlparse, findbugid, findcommits
+from docstats.utils import (compare_usernames,
+                            git_urlparse,
+                            http_urlparse,
+                            gettmpdir,
+                            urlparse,
+                            findbugid,
+                            findcommits,
+                            )
 
 
 @pytest.mark.parametrize('url,expected', [
@@ -175,3 +182,35 @@ def test_findbugid_cve(text, expected):
 ])
 def test_findcommits(text, expected):
     assert findcommits(text) == expected
+
+
+@pytest.mark.parametrize('email,other,expected', [
+    # If both strings are the same
+    ("Tux Penguin <scholle@greenland.ice>",
+     "Tux Penguin <scholle@greenland.ice>", True),
+    # Both names are equal, but not email:
+    ("Tux Penguin <scholle@greenland.ice>",
+     "Tux Penguin <info@example.org>", True),
+    # Both names are not equal, but email:
+    ("Tux <tux@greenland.ice>",
+     "Tux Penguin <tux@greenland.ice>", True),
+    # With umlauts
+    ("Jürgen  <js@example.org>",
+     "Jürgen Beispiel  <js@example.org>", True),
+    # Both names and email addresses are different:
+    ("Tux Penguin <tux@greenland.ice>",
+     "Wilber Gimp <wilber@gimp.org>", False),
+    # First name missing the email address:
+    ("Tux Penguin",
+     "Wilber Gimp <wilber@gimp.org>", False),
+    # Second name missing the email address:
+    ("Tux Penguin <tux@greenland.ice>",
+     "Wilber Gimp", False),
+    # Email address without brackets
+    ("Tux Penguin tux@greenland.ice",
+     "Wilber Gimp wilber@gimp.org", False),
+
+])
+def test_compare_usernames(email, other, expected):
+    assert compare_usernames(email, other) == expected
+

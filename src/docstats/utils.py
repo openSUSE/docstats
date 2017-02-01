@@ -47,6 +47,12 @@ _GITURL_REGEX = re.compile(r'(?P<user>{user}+)@'
 
 _GITDOMAIN_REPO_REGEX = re.compile(_DOMAIN_REPO_REGEX)
 
+
+#: The official regex for email addresses
+_RFC5322_REGEX = re.compile(r'''(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])''')
+
+
+
 #:
 #: For parsing text with bug fix information
 _BUGTRACKER_REGEXES = (
@@ -203,3 +209,65 @@ def findcommits(text):
         return [(text if text else 'commit', number) for text, number in match]
     else:
         return []
+
+
+def compare_usernames(user, other):
+    """Compare two user names in the format "firstname surename <email>"
+
+    a user/email combination is considered equal when the following conditions
+    are met (in this order)
+
+    * when both strings are the same
+    * when both names are equal, but the email addresses are different
+    * when both email addresses are equal, but the names are different
+
+    :param str user:
+    :param str other:
+    :return:
+    """
+    # Short check:
+    if user == other:
+        return True
+
+    # Do some consistency checking
+    matchu1 = _RFC5322_REGEX.search(user)
+    if matchu1 is None:
+        return False
+        # raise ValueError("Could not find email address in user string {!r}".format(user))
+    matchu2 = _RFC5322_REGEX.search(other)
+    if matchu2 is None:
+        return False
+        # raise ValueError("Could not find email address in user string {!r}".format(other))
+
+    # Get a tuple of start/end positions
+    span1 = matchu1.span()
+    span2 = matchu2.span()
+
+    # Extract the email addresses from the original string:
+    email1 = user[slice(*span1)]
+    email2 = other[slice(*span2)]
+
+    # Initialize the end position of the name; as a good start, use the start position of
+    # the email address:
+    end1 = span1[0]
+    end2 = span2[0]
+
+    # As we cannot be sure if the string contains brackets, we check for this:
+    if user[span1[0]-1] == '<':
+        end1 -= 1
+    if other[span2[0]-1] == '<':
+        end2 -= 1
+
+    name1 = user[:end1].strip()
+    name2 = other[:end2].strip()
+
+    # Condition 1: Both names are equal -> True
+    # print("Name condition:", repr(name1), repr(name2))
+    if name1 == name2:
+        return True
+
+    # Condition 2: Both email addresses are equal
+    if email1 == email2:
+        return True
+
+    return False
