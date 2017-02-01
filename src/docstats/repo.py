@@ -31,7 +31,21 @@ def analyze(repo, config):
     :type queue: :class:`queue.Queue`
     :param config: the docstats configuration contents
     :type config: :class:`configparser.ConfigParser`
-    :return:
+    :return: dictionary with data
+        data = { 'branch1': data_of_branch1,
+                 'branch2': data_of_branch2,
+                }
+        data_of_branchX = {'doc-committers': X,
+                           'additions': A,
+                           'deletions': D,
+                           'changes':  C,
+                           'bsc': BSC,
+                           'gh': GH,
+                           'trello': TR,
+                           ''
+                           }
+
+    :rtype: dict
     """
 
     target = repo.heads[0]
