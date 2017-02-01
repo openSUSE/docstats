@@ -16,24 +16,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-#prev = None
-#for idx, cur in enumerate(repo.walk(repo.head.target)):
-#
-#    if prev is not None:
-#        print(prev.id)
-#        diff = cur.tree.diff_to_tree(prev.tree)
-#        for patch in diff:
-#            print(patch.status, ':', patch.new_file_path, end='')
-#            if patch.new_file_path != patch.old_file_path:
-#                print('(was %s)' % patch.old_file_path, end='')
-#            print()
-#
-#    if cur.parents:
-#        prev = cur
-#        cur = cur.parents[0]
-#print(">>> Number of iterations: %s" % idx)
-
+from .config import getbranches
 from collections import Counter, defaultdict
+from git import GitCommandError
+
+import statistics
+
 
 
 def analyze(repo, config):
@@ -47,9 +35,27 @@ def analyze(repo, config):
     """
 
     target = repo.heads[0]
+    wd = repo.working_tree_dir
+    section = wd.rsplit("/", 1)[-1]
+
+    for branchname, start, end in getbranches(section, config):
+        try:
+            repo.git.checkout(branchname)
+        except GitCommandError as error:
+            # error contains the following attributes:
+            # ._cmd, ._cause, ._cmdline
+            # .stderr, .stdout, .status, .command
+            print(error)
+            print(vars(error))
+            print(error.status)
+            print(error.command)
+            print(error.stderr)
+            continue
+
+        # -----------
 
     print("Repo:", repo.git_dir)
-    print("Target:", target)
+    # print("Target:", target)
     # print("RootTree:", roottree)
     # print("dir", dir(repo))
 
