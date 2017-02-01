@@ -90,7 +90,7 @@ def getbranchparts(string):
             yield branchname, data[0], data[1]
 
 
-def getbranches(section, config):
+def getbranches(branches):
     """Generator: Yields all "branches" from a specific section like this:
 
     [section]
@@ -98,20 +98,21 @@ def getbranches(section, config):
         branch/a  abc
         branch/b  ..def
         branch/c  cde..eff
+        # branch/d
 
-    :param str section: the section
-    :param config: a :class:`configparser.ConfigParser` instance
-    :type config: :class:`configparser.ConfigParser`
+    :param branches: a string of the branches key from the config file or None
+    :rtype: str | None | ''
     :return: yields a tuple in the format (branch, from, to)
     :rtype: generator
     """
 
-    branches = config.get(section, 'branches', fallback=None)
-    if branches is None:
+    if not branches:
         raise StopIteration
 
     for branch in branches.strip().split("\n"):
         branch = branch.strip()
-        if branch.startswith('#'):
+        # If line starts with a comment character ignore this line
+        # and continue with next:
+        if branch[0] in ('#', ';'):
             continue
         yield from getbranchparts(branch)

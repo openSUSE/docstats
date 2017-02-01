@@ -74,17 +74,43 @@ def test_geturls():
     assert urls == [('doc-a', 'git://doc-a.git'), ('doc-b', 'git://doc-b.git')]
 
 
-def test_getbranches():
-    branches = list(getbranches('doc-b', config))
-    expected = [('maint/a',  '',     ''),
-                ('maint/b',  'abce', ''),
-                ('maint/c',  '',     'f123'),
-                ('maint/d',  'abce', ''),
-                ('maint/e',  '1234', '345a')
-                ]
-    assert branches
-    assert len(branches) == 5
-    assert branches == expected
+@pytest.mark.parametrize('string,expected', [
+    #
+    (None, []),
+    #
+    ('', []),
+    #
+    ('''br/a
+    ''', [('br/a', '', '')]),
+    #
+    ('''
+ # br/null  adfadf..affee
+ br/a   abc..def
+ # This is an additional comment
+ br/b
+''', [('br/a', 'abc', 'def'), ('br/b', '', '')]),
+    #
+    ('''
+ # br/null  adfadf..affee
+ br/a   abc..
+ br/b   ..def
+ br/c   bcd..eff
+''', [('br/a', 'abc', ''), ('br/b', '', 'def'), ('br/c', 'bcd', 'eff')])
+
+])
+def test_getbranches(string, expected):
+    assert list(getbranches(string)) == expected
+
+    #branches = list(getbranches('doc-b', config))
+    #expected = [('maint/a',  '',     ''),
+    #            ('maint/b',  'abce', ''),
+    #            ('maint/c',  '',     'f123'),
+    #            ('maint/d',  'abce', ''),
+    #            ('maint/e',  '1234', '345a')
+    #            ]
+    #assert branches
+    #assert len(branches) == 5
+    #assert branches == expected
 
 
 @pytest.mark.parametrize('string,expected', [
