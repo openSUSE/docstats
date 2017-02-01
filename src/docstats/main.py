@@ -45,7 +45,7 @@ def main(cliargs=None):
         basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
         os.makedirs(basedir, exist_ok=True)
         # queue = cloner(config, basedir, jobs=args['--jobs'])
-        work(config, basedir, jobs=args['--jobs'])
+        work(config, basedir, sections=args['--section'], jobs=args['--jobs'])
         # analyze(queue, config)
 
     except (FileNotFoundError, OSError) as error:
