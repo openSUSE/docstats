@@ -42,6 +42,13 @@ from docopt import DocoptExit
     # 10
     (['--section=bar', 'foo.ini'],
      {'CONFIGFILE': 'foo.ini', '--section': 'bar'}),
+    # 11
+    (['--section', 'bar,baz', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--section': 'bar,baz'}),
+    # 12
+    (['--section=bar,baz', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--section': 'bar,baz'}),
+
 ])
 def test_parsecli(cli, expected, monkeypatch):
 
