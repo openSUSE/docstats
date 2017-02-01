@@ -42,6 +42,8 @@ Options:
     -h, --help             Shows this help
     -v                     Raise verbosity level
     --jobs=N, -j N         Allow N jobs at once [default: 1]
+    --section=NAME, -s NAME
+                           Select specific section from configuration file only (default all)
     --version              Prints the version
     CONFIGFILE             The configuration file which contains all to repos to investigate
 """

@@ -33,6 +33,15 @@ from docopt import DocoptExit
      ),
     # 7 - fail --jobs
     pytest.mark.xfail((['--jobs=x', 'foo.ini'], {} )),
+    # 8
+    (['-s', 'bar', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--section': 'bar'}),
+    # 9
+    (['--section', 'bar', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--section': 'bar'}),
+    # 10
+    (['--section=bar', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--section': 'bar'}),
 ])
 def test_parsecli(cli, expected, monkeypatch):
 
