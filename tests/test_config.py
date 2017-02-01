@@ -1,7 +1,9 @@
+#
+
 import pytest
 import py
 
-from docstats.config import parseconfig, geturls
+from docstats.config import parseconfig, geturls, getbranches, getbranchparts
 
 # Our global variables which is used in our configuration parser
 # will be overwritten bei setup_module()
@@ -29,6 +31,12 @@ url = git://doc-a.git
 
 [doc-b]
 url = git://doc-b.git
+branches =
+    maint/a
+    maint/b  abce
+    maint/c  ..f123
+    maint/d  abce..
+    maint/e  1234..345a
 
 [doc-c]
 url =
@@ -63,3 +71,35 @@ def test_geturls():
     urls = list(geturls(config))
     assert len(urls) == 2
     assert urls == [('doc-a', 'git://doc-a.git'), ('doc-b', 'git://doc-b.git')]
+
+
+def test_getbranches():
+    branches = list(getbranches('doc-b', config))
+    print("from config:", repr(config.get('doc-b', 'branches')))
+    expected = [('maint/a', '', ''),
+                ('maint/b', 'abce', ''),
+                ('maint/c', '', 'f123'),
+                ('maint/d' 'abce', ''),
+                ('maint/e','1234', '345a')
+                ]
+    assert branches
+    assert len(branches) == 5
+    print("\n>> branches\n", branches, "\n", expected)
+
+    assert branches == expected
+
+
+@pytest.mark.parametrize('string,expected', [
+    #
+    ('maintenance/SLE12',            [('maintenance/SLE12', '', '')]),
+    #
+    (' maintenance/SLE12   abc\n',   [('maintenance/SLE12', 'abc', '')]),
+    #
+    ('maintenance/SLE12   abc..',    [('maintenance/SLE12', 'abc', '')]),
+    #
+    ('maintenance/SLE12   ..abc',    [('maintenance/SLE12', '', 'abc')]),
+    #
+    ('maintenance/SLE12   abc..def', [('maintenance/SLE12', 'abc', 'def')]),
+])
+def test_getbranchparts(string, expected):
+    assert list(getbranchparts(string)) == expected
