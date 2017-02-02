@@ -2,6 +2,7 @@
 
 import pytest
 import py
+from unittest.mock import patch
 
 from docstats.config import parseconfig, geturls, getbranches, getbranchparts
 
@@ -68,12 +69,46 @@ def test_config_url():
     assert config['doc-a']['url'] == 'git://doc-a.git'
 
 
+# --------------------------------------------------------
 def test_geturls():
     urls = list(geturls(config))
     assert len(urls) == 2
     assert urls == [('doc-a', 'git://doc-a.git'), ('doc-b', 'git://doc-b.git')]
 
 
+def test_geturls_with_section():
+    urls = list(geturls(config, ['doc-a']))
+    assert len(urls) == 1
+    assert urls == [('doc-a', 'git://doc-a.git'),]
+
+
+def test_geturls_with_section_and_empty_url():
+    urls = list(geturls(config, ['doc-c']))
+    assert urls == []
+
+
+def test_geturls_with_unknown_section():
+    urls = list(geturls(config, ['missing']))
+    assert urls == []
+
+
+@patch('docstats.config.ConfigParser')
+def test_geturls_with_patching(mock_config):
+    mock_config.sections.return_value = ['foo']
+    mock_config.get.return_value = 'url-value'
+    urls = list(geturls(mock_config))
+    assert urls == [('foo', 'url-value')]
+
+
+@patch('docstats.config.ConfigParser')
+def test_geturls_with_patching_empty_url(mock_config):
+    mock_config.sections.return_value = ['foo']
+    mock_config.get.return_value = ''
+    urls = list(geturls(mock_config))
+    assert urls == []
+
+
+# --------------------------------------------------------
 @pytest.mark.parametrize('string,expected', [
     #
     (None, []),

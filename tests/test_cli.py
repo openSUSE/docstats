@@ -35,19 +35,19 @@ from docopt import DocoptExit
     pytest.mark.xfail((['--jobs=x', 'foo.ini'], {} )),
     # 8
     (['-s', 'bar', 'foo.ini'],
-     {'CONFIGFILE': 'foo.ini', '--section': 'bar'}),
+     {'CONFIGFILE': 'foo.ini', '--sections': ['bar']}),
     # 9
-    (['--section', 'bar', 'foo.ini'],
-     {'CONFIGFILE': 'foo.ini', '--section': 'bar'}),
+    (['--sections', 'bar', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--sections': ['bar']}),
     # 10
-    (['--section=bar', 'foo.ini'],
-     {'CONFIGFILE': 'foo.ini', '--section': 'bar'}),
+    (['--sections=bar', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--sections': ['bar']}),
     # 11
-    (['--section', 'bar,baz', 'foo.ini'],
-     {'CONFIGFILE': 'foo.ini', '--section': 'bar,baz'}),
+    (['--sections', 'bar,baz', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--sections': ['bar', 'baz']}),
     # 12
-    (['--section=bar,baz', 'foo.ini'],
-     {'CONFIGFILE': 'foo.ini', '--section': 'bar,baz'}),
+    (['--sections=bar,baz', 'foo.ini'],
+     {'CONFIGFILE': 'foo.ini', '--sections': ['bar', 'baz']}),
 
 ])
 def test_parsecli(cli, expected, monkeypatch):
@@ -62,7 +62,7 @@ def test_parsecli(cli, expected, monkeypatch):
 
 def test_checkcliargs_with_FileNotFoundError():
     with pytest.raises(FileNotFoundError):
-        checkcliargs({'--jobs': '1', 'CONFIGFILE': 'fake'})
+        checkcliargs({'--jobs': '1', 'CONFIGFILE': 'fake', '--sections': None})
 
 
 def test_checkcliargs_with_DocoptExit():

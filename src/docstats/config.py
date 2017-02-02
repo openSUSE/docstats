@@ -44,17 +44,26 @@ def parseconfig(configfile):
     return files, config
 
 
-def geturls(config):
-    """Yields all URLs from a repository; if a section doesn't have the url keyword it is skipped
+def geturls(config, sections=None):
+    """Yields all URLs from a repository in a tuple of (section, url) unless the section doesn't have
+       the url keyword or the url is empty, In this case nothing is yielded.
 
     :param config: a :class:`configparser.ConfigParser` instance
     :type config: :class:`configparser.ConfigParser`
+    :param list sections: a list of sections which are searched for
+    :rtype: None | []
     :return: yields a tuple in the format (section, URL)
     :rtype: generator
     """
-    for sec in config.sections():
-        if config.get(sec, 'url', fallback=None) != '':
-            yield sec, config[sec]['url']
+    if not sections:
+        sections = config.sections()
+
+    for sec in sections:
+        value = config.get(sec, 'url', fallback=None)
+        if value:
+            yield sec, value
+        else:
+            continue
 
 
 def getbranchparts(string):

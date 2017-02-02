@@ -42,8 +42,9 @@ Options:
     -h, --help             Shows this help
     -v                     Raise verbosity level
     --jobs=N, -j N         Allow N jobs at once [default: 1]
-    --section=NAME, -s NAME
-                           Select specific section from configuration file only (default all)
+    --sections=NAME, -s NAME
+                           Select one or more sections from configuration file only (default all)
+                           seüarated  by comma
     --version              Prints the version
     CONFIGFILE             The configuration file which contains all to repos to investigate
 """
@@ -80,6 +81,9 @@ def checkcliargs(args):
         args['--jobs'] = int(args['--jobs'])
     except ValueError as error:
         raise DocoptExit("Option -j/--jobs does not contain a number")
+
+    args['--sections'] = None if args['--sections'] is None else args['--sections'].split(',')
+
 
     if configfile is None:
         raise DocoptExit("Expected config file")

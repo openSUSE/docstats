@@ -77,7 +77,7 @@ def work(config, basedir, sections=None, jobs=1):
     """
     # Establish communication queues
     q = queue.Queue()
-    urls = geturls(config)
+    urls = geturls(config, sections)
 
     start = time()
     with ProcessPoolExecutor(max_workers=jobs) as executor:
