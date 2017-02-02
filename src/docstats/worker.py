@@ -26,6 +26,7 @@ import os.path
 import git
 
 from .config import geturls
+from .log import log
 from .repo import analyze
 
 
@@ -39,7 +40,7 @@ def clone_repo(url, gitdir):
     """
 
     if os.path.exists(gitdir):
-        print("URL {!r} alread cloned, using {!r}.".format(url, gitdir))
+        log.debug("URL %r alread cloned, using %r.", url, gitdir)
         # return pygit2.Repository(gitdir)
         return git.Repo(gitdir)
 
@@ -93,10 +94,10 @@ def work(config, basedir, sections=None, jobs=1):
                 q.put(data)
             # TODO: Make exceptions more explicit
             except Exception as exc:
-                print('%r generated an exception: %s' % (url, exc))
+                log.fatal('%r generated an exception: %s', url, exc)
             else:
-                print('Got from URL %r: %s' % (url, data))
+                log.info('Got from URL %r: %s', url, data)
 
     end = time()
-    print("Finished worker. Time={:.1f}".format(float(end - start)))
+    log.info("Finished worker. Time=%.2fs", float(end - start))
     return

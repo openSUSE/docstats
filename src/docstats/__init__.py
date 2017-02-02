@@ -16,5 +16,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
+import logging
+
 __version__ = "0.1.0"
 __author__ = "Thomas Schraitle"
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())

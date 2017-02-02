@@ -19,6 +19,7 @@
 from .cli import parsecli
 from .config import parseconfig, geturls
 from configparser import DuplicateSectionError, DuplicateOptionError
+from .log import log, setloglevel
 from .utils import gettmpdir
 from .worker import work
 
@@ -33,10 +34,14 @@ def main(cliargs=None):
     """
     try:
         args = parsecli(cliargs)
+        setloglevel(args['-v'])
+        log.info(args)
+
         configfile = args['CONFIGFILE']
         files, config = parseconfig(configfile)
-        print(args)
-        print(config)
+
+        # print(args)
+        # print(config)
         # ----
         # print("Sections found:", config.sections())
         # print("branch", config['doc-slert']['branch'])
@@ -44,20 +49,18 @@ def main(cliargs=None):
         # ----
         basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
         os.makedirs(basedir, exist_ok=True)
-        # queue = cloner(config, basedir, jobs=args['--jobs'])
         work(config, basedir, sections=args['--sections'], jobs=args['--jobs'])
-        # analyze(queue, config)
 
     except (DuplicateSectionError, DuplicateOptionError) as error:
-        print(error)
+        log.error(error)
         return 20
 
     except (FileNotFoundError, OSError) as error:
-        print(error)
+        log.error(error)
         return 10
 
     except KeyboardInterrupt:
-        print("aborted.")
+        log.fatal("aborted.")
         return 10
 
     return 0
