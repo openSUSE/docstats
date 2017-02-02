@@ -18,9 +18,9 @@
 
 from .cli import parsecli
 from .config import parseconfig, geturls
-from .repo import analyze
+from configparser import DuplicateSectionError, DuplicateOptionError
 from .utils import gettmpdir
-from .worker import worker
+from .worker import work
 
 import os
 
@@ -38,14 +38,19 @@ def main(cliargs=None):
         print(args)
         print(config)
         # ----
-        #print("Sections found:", config.sections())
-        #print("branch", config['doc-slert']['branch'])
-        #print("url", config['doc-slert']['url'])
+        # print("Sections found:", config.sections())
+        # print("branch", config['doc-slert']['branch'])
+        # print("url", config['doc-slert']['url'])
         # ----
-        tmpdir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
-        os.makedirs(tmpdir, exist_ok=True)
-        queue = worker(geturls(config), tmpdir, jobs=args['--jobs'])
-        analyze(queue, config)
+        basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
+        os.makedirs(basedir, exist_ok=True)
+        # queue = cloner(config, basedir, jobs=args['--jobs'])
+        work(config, basedir, sections=args['--sections'], jobs=args['--jobs'])
+        # analyze(queue, config)
+
+    except (DuplicateSectionError, DuplicateOptionError) as error:
+        print(error)
+        return 20
 
     except (FileNotFoundError, OSError) as error:
         print(error)

@@ -44,14 +44,84 @@ def parseconfig(configfile):
     return files, config
 
 
-def geturls(config):
-    """Yields all URLs from a repository; if a section doesn't have the url keyword it is skipped
+def geturls(config, sections=None):
+    """Yields all URLs from a repository in a tuple of (section, url) unless the section doesn't have
+       the url keyword or the url is empty, In this case nothing is yielded.
 
     :param config: a :class:`configparser.ConfigParser` instance
     :type config: :class:`configparser.ConfigParser`
-    :return: yields the URL string
+    :param list sections: a list of sections which are searched for
+    :rtype: None | []
+    :return: yields a tuple in the format (section, URL)
     :rtype: generator
     """
-    for  sec in config.sections():
-        if config.get(sec, 'url', fallback=None) != '':
-            yield config[sec]['url']
+    if not sections:
+        sections = config.sections()
+
+    for sec in sections:
+        value = config.get(sec, 'url', fallback=None)
+        if value:
+            yield sec, value
+        else:
+            continue
+
+
+def getbranchparts(string):
+    """Generator: Yields its branch name and optional start/end dates from a string
+
+    For example:
+    >>> list(getbranchparts('maintenance/SLE12'))
+    [('maintenance/SLE12', '', '')]
+    >>> list(getbranchparts('maintenance/SLE12   abc'))
+    [('maintenance/SLE12', 'abc', '')]
+    >>> list(getbranchparts('maintenance/SLE12   abc..'))
+    [('maintenance/SLE12', 'abc', '')]
+    >>> list(getbranchparts('maintenance/SLE12   ..abc'))
+    [('maintenance/SLE12', '', 'abc')]
+    >>> list(getbranchparts('maintenance/SLE12   abc..def'))
+    [('maintenance/SLE12', 'abc', 'def')]
+
+    :param string: a string in the format "BRANCHNAME [[START][..][END]]
+    :return: a tuple in the form "(branchname, start, end)"; the start and end parts can be an empty string
+    :rtype: generator
+    """
+    # Remove duplicated spaces
+    data = ' '.join(string.strip().split()).split(' ')
+
+    if len(data) == 1:
+        yield data[0], '', ''
+    else:
+        branchname = data[0]
+        data = data[1].split('..')
+        if len(data) == 1:
+            yield branchname, data[0], ''
+        else:
+            yield branchname, data[0], data[1]
+
+
+def getbranches(branches):
+    """Generator: Yields all "branches" from a specific section like this:
+
+    [section]
+    branches =
+        branch/a  abc
+        branch/b  ..def
+        branch/c  cde..eff
+        # branch/d
+
+    :param branches: a string of the branches key from the config file or None
+    :rtype: str | None | ''
+    :return: yields a tuple in the format (branch, from, to)
+    :rtype: generator
+    """
+
+    if not branches:
+        raise StopIteration
+
+    for branch in branches.strip().split("\n"):
+        branch = branch.strip()
+        # If line starts with a comment character ignore this line
+        # and continue with next:
+        if branch[0] in ('#', ';'):
+            continue
+        yield from getbranchparts(branch)

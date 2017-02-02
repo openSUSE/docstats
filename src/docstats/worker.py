@@ -16,36 +16,34 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import current_thread
-from time import sleep, time
+from concurrent.futures import ProcessPoolExecutor, as_completed
+# from threading import current_thread
+from time import time
 import queue
 import os.path
 
-# import pygit2
+
 import git
 
+from .config import geturls
+from .repo import analyze
 
-from .utils import urlparse
 
-
-
-def clone_repo(url, tmpdir):
+def clone_repo(url, gitdir):
     """Clone the Git repository
 
+    :param str section: the section from the configuration file
     :param str url: the URL of the Git repository
     :param str tmpdir: the temporary directory to clone to
     :return: ???
     """
-    urldict = urlparse(url)
-    gitdir = os.path.join(tmpdir, urldict['repo'])
 
     if os.path.exists(gitdir):
         print("URL {!r} alread cloned, using {!r}.".format(url, gitdir))
         # return pygit2.Repository(gitdir)
         return git.Repo(gitdir)
 
-    print("%s: Cloning url=%r to %r" % (current_thread().name, url, gitdir))
+    # print("%s: Cloning url=%r to %r" % (current_thread().name, url, gitdir))
     start = time()
     repo = git.Repo.clone_from(url, gitdir)
     # repo = pygit2.clone_repository(url, gitdir )  # pygit2.UserPass('', '')
@@ -53,19 +51,41 @@ def clone_repo(url, tmpdir):
     return repo
 
 
-def worker(urls, tmpdir, jobs=1):  # pragma: no cover
+def clone_and_analyze(url, gitdir, config):
+    """Clone the GitHub repo and analyze it
+
+    :param url: the GitHub URL to clone
+    :param gitdir: the path to the temporary directory (including the section)
+    :param config:
+    :type config: :class:`configparser.ConfigParser`
+    :return:
+    """
+    repo = clone_repo(url, gitdir)
+    return analyze(repo, config)
+
+
+
+def work(config, basedir, sections=None, jobs=1):
     """Working off all Git URLs
 
-    :param urls: a list or generator of urls
-    :param str tmpdir: the  temporary directory to clone to
+    :param config: a list or generator of urls
+    :type config: :class:`configparser.ConfigParser`
+    :param str basedir: the temporary base directory
+    :param section: the section to use
     :param int jobs: integer number of workers to create [default: 1]
+    :return: ???
     """
-    # See also: http://www.codekoala.com/posts/command-line-progress-bar-python/
-    print("Calling worker...")
+    # Establish communication queues
     q = queue.Queue()
+    urls = geturls(config, sections)
+
     start = time()
-    with ThreadPoolExecutor(max_workers=jobs) as executor:
-        future_to_url = {executor.submit(clone_repo, url, tmpdir): url for url in urls}
+    with ProcessPoolExecutor(max_workers=jobs) as executor:
+        future_to_url = {executor.submit(clone_and_analyze,
+                                         url,
+                                         os.path.join(basedir, section),
+                                         config
+                                         ): url for section, url in urls}
         for future in as_completed(future_to_url):
             url = future_to_url[future]
             try:
@@ -79,5 +99,4 @@ def worker(urls, tmpdir, jobs=1):  # pragma: no cover
 
     end = time()
     print("Finished worker. Time={:.1f}".format(float(end - start)))
-    print("Queue:", q)
-    return q
+    return
