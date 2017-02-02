@@ -25,18 +25,30 @@ import json
 import statistics
 
 
-def iter_commits(repo, dictresult, branchname):
+def iter_commits(repo, dictresult, branchname, start=None, end=None):
     """Iterate through all commits
 
     :param repo:
     :param dictresult:
     :return:
     """
-    for idx, commit in enumerate(repo.iter_commits(repo.head), 1):
+    rev = "..".join([start, end])
+    if rev == '..':
+        rev = repo.head
+
+    for idx, commit in enumerate(repo.iter_commits(rev), 1):
         for item in commit.stats.total:
             dictresult[branchname][item] += commit.stats.total[item]
     # Save overall commits:
     dictresult[branchname]['commits'] = idx
+
+
+def init_stats_dict():
+    """
+
+    :return:
+    """
+    return {item: 0 for item in ('deletions', 'files', 'insertions', 'lines')}
 
 
 def analyze(repo, config):
@@ -95,9 +107,8 @@ def analyze(repo, config):
             log.info("Using end=%r", end)
             # kwargs[] = end
 
-        result[branchname].update({item: 0 for item in ('deletions', 'files', 'insertions', 'lines')})
-
-        iter_commits(repo, result, branchname)
+        result[branchname].update(init_stats_dict())
+        iter_commits(repo, result, branchname, start, end)
 
     if not result:
         branchname = config.get(section, 'branch', fallback=None)
@@ -105,9 +116,8 @@ def analyze(repo, config):
             # Use our default branch...
             branchname = 'develop'
         result[branchname] = {}
-        result[branchname].update({item: 0 for item in ('deletions', 'files', 'insertions', 'lines')})
+        result[branchname].update(init_stats_dict())
 
-        log.debug("dict is %r", result)
         iter_commits(repo, result, branchname)
 
     log.debug("Result dict is %r", result)
