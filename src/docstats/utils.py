@@ -21,7 +21,7 @@ import os
 import urllib.parse
 
 
-__all__ = ('findbugid', 'findcommits', 'git_urlparse', 'http_urlparse', 'tmpdir', 'urlparse',)
+__all__ = ('compare_usernames', 'findbugid', 'findcommits', 'git_urlparse', 'http_urlparse', 'tmpdir', 'urlparse',)
 
 
 #: For parsing GitHub URLs
