@@ -1,10 +1,14 @@
 import pytest
 import os
 import shutil
+import sys
 
 from unittest.mock import patch, Mock, MagicMock
 from docstats.worker import clone_repo, clone_and_analyze
 import git
+
+skip_py34 = pytest.mark.skipif((sys.version_info.major, sys.version_info.minor) == (3, 4),
+                               reason="skip test for python3.4.x")
 
 USER = os.environ["USER"]
 PYTESTTMPDIR = "/tmp/pytest-of-%s/" % USER
@@ -23,12 +27,13 @@ def gitrepo():
     shutil.rmtree(GITDIR)
 
 
-
+@skip_py34
 def test_clone_repo_if_path_exists(gitrepo):
     repo = clone_repo('fake-url', os.path.join(PYTESTTMPDIR, SECTION))
     assert repo.git_dir == GITREPO.git_dir
 
 
+@skip_py34
 @patch('docstats.worker.os.path.exists')
 @patch('docstats.worker.git.Repo')
 def test_clone_repo(mock_repo, mock_path):
