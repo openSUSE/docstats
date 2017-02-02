@@ -30,11 +30,18 @@ def iter_commits(repo, dictresult, branchname, start=None, end=None):
 
     :param repo:
     :param dictresult:
+    :param str branchname: the name of the branch
     :return:
     """
+    start = '' if start is None else start
+    end = '' if end is None else end
+
     rev = "..".join([start, end])
     if rev == '..':
         rev = repo.head
+
+    log.info("Using start=%r", start)
+    log.info("Using end=%r", end)
 
     for idx, commit in enumerate(repo.iter_commits(rev), 1):
         for item in commit.stats.total:
@@ -44,9 +51,11 @@ def iter_commits(repo, dictresult, branchname, start=None, end=None):
 
 
 def init_stats_dict():
-    """
+    """Create a dictionary statistics object with defaults to zero for;
+       used for counting
 
-    :return:
+    :return: dictionary with all values to zero
+    :rtype: dict
     """
     return {item: 0 for item in ('deletions', 'files', 'insertions', 'lines')}
 
@@ -87,6 +96,9 @@ def analyze(repo, config):
                                                          fallback=None)
                                               ):
         result[branchname] = {}
+        log.info("start %s", start)
+        result[branchname]['start'] = str(start)
+        result[branchname]['end'] = str(end)
         try:
             repo.git.checkout(branchname)
         except GitCommandError as error:
@@ -99,26 +111,22 @@ def analyze(repo, config):
             continue
 
         log.info("Investigating repo %r on branch %r...", repo.git_dir, branchname)
-        kwargs={}
-        if start:
-            log.info("Using start=%r", start)
-            # kwargs[] = start
-        if end:
-            log.info("Using end=%r", end)
-            # kwargs[] = end
 
         result[branchname].update(init_stats_dict())
         iter_commits(repo, result, branchname, start, end)
 
     if not result:
         branchname = config.get(section, 'branch', fallback=None)
+        start =  config.get(section, 'start', fallback='')
+        end =  config.get(section, 'end', fallback='')
         if not branchname:
             # Use our default branch...
             branchname = 'develop'
+        log.info('No branches key found in config file, using %r branch', branchname)
         result[branchname] = {}
         result[branchname].update(init_stats_dict())
 
-        iter_commits(repo, result, branchname)
+        iter_commits(repo, result, branchname, start, end)
 
     log.debug("Result dict is %r", result)
 
