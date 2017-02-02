@@ -18,10 +18,25 @@
 
 from .config import getbranches
 from collections import Counter, defaultdict
+from .log import log
 from git import GitCommandError
+import json
 
 import statistics
 
+
+def iter_commits(repo, dictresult, branchname):
+    """Iterate through all commits
+
+    :param repo:
+    :param dictresult:
+    :return:
+    """
+    for idx, commit in enumerate(repo.iter_commits(repo.head), 1):
+        for item in commit.stats.total:
+            dictresult[branchname][item] += commit.stats.total[item]
+    # Save overall commits:
+    dictresult[branchname]['commits'] = idx
 
 
 def analyze(repo, config):
@@ -35,64 +50,71 @@ def analyze(repo, config):
         data = { 'branch1': data_of_branch1,
                  'branch2': data_of_branch2,
                 }
-        data_of_branchX = {'doc-committers': X,
-                           'additions': A,
-                           'deletions': D,
-                           'changes':  C,
-                           'bsc': BSC,
-                           'gh': GH,
-                           'trello': TR,
-                           ''
+        data_of_branchX = {'doc-committers': X, # type:set
+                           'additions': A,      # type:int
+                           'deletions': D,      # type:int
+                           '#commits': N,       # type:int
+                           'changes':  C,       # type:int
+                           'bsc': BSC,          # type:set
+                           'gh': GH,            # type:set
+                           'fate': FA,          # type:set
+                           'trello': TR,        # type:set
+                           'doccomments: DC',   # type:set
+                           'start-commit': SC   # type:str
+                           'end-commit': EC     # type:str
                            }
-
     :rtype: dict
     """
 
     result = {}
-    target = repo.heads[0]
     wd = repo.working_tree_dir
     section = wd.rsplit("/", 1)[-1]
-    committers = Counter()
-    stats = defaultdict(int)
 
     for branchname, start, end in getbranches(config.get(section,
                                                          'branches',
                                                          fallback=None)
                                               ):
+        result[branchname] = {}
         try:
             repo.git.checkout(branchname)
         except GitCommandError as error:
             # error contains the following attributes:
             # ._cmd, ._cause, ._cmdline
             # .stderr, .stdout, .status, .command
-            print(error)
-            print(vars(error))
-            print(error.status)
-            print(error.command)
-            print(error.stderr)
+            log.error(error)
+            # We want to have it in the result dict too:
+            result[branchname] = {'error': error}
             continue
 
-        # -----------
+        log.info("Investigating repo %r on branch %r...", repo.git_dir, branchname)
+        kwargs={}
+        if start:
+            log.info("Using start=%r", start)
+            # kwargs[] = start
+        if end:
+            log.info("Using end=%r", end)
+            # kwargs[] = end
 
-    print("Repo:", repo.git_dir)
-    # print("Target:", target)
-    # print("RootTree:", roottree)
-    # print("dir", dir(repo))
+        result[branchname].update({item: 0 for item in ('deletions', 'files', 'insertions', 'lines')})
 
+        iter_commits(repo, result, branchname)
 
-    # additions = 0
-    # deletions = 0
-    # files = 0
-    for idx, commit in enumerate(repo.iter_commits(repo.head), 1):
-        committers[commit.author] += 1
-        # datetime.fromtimestamp(commit.committed_date)
-        for item in commit.stats.total:
-            stats[item] += commit.stats.total[item]
+    if not result:
+        branchname = config.get(section, 'branch', fallback=None)
+        if not branchname:
+            # Use our default branch...
+            branchname = 'develop'
+        result[branchname] = {}
+        result[branchname].update({item: 0 for item in ('deletions', 'files', 'insertions', 'lines')})
 
-        # print(idx, commit.summary)
-    print("-"*10)
-    print(">> Commits:", idx)
-    print(">> Committers:", committers.most_common(5))
-    print(">> Stats for %r:" % repo.git_dir, stats)
+        log.debug("dict is %r", result)
+        iter_commits(repo, result, branchname)
 
-    return committers, stats
+    log.debug("Result dict is %r", result)
+
+    jsonfile = wd + ".json"
+    with open(jsonfile, 'w') as fh:
+        json.dump(result, fh, indent=4)
+        log.debug("Writing results to %r", jsonfile)
+
+    return result

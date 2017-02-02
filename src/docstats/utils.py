@@ -271,3 +271,4 @@ def compare_usernames(user, other):
         return True
 
     return False
+
