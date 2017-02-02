@@ -91,6 +91,19 @@ def analyze(repo, config):
     wd = repo.working_tree_dir
     section = wd.rsplit("/", 1)[-1]
 
+    # HINT: Maybe better refactor it to:
+    # urls = list(getbranches(config.get(section,'branches',fallback=None)))
+    # if not urls:
+    #   branchname = config.get(section, 'branch', fallback=None)
+    #   start =  config.get(section, 'start', fallback='')
+    #   end =  config.get(section, 'end', fallback='')
+    #
+    #   if not branchname:
+    #      # Use our default branch...
+    #      branchname = 'develop'
+    #   urls = [(branchname, start, end)]
+
+
     for branchname, start, end in getbranches(config.get(section,
                                                          'branches',
                                                          fallback=None)
