@@ -119,11 +119,14 @@ def analyze(repo, config):
         branchname = config.get(section, 'branch', fallback=None)
         start =  config.get(section, 'start', fallback='')
         end =  config.get(section, 'end', fallback='')
+
         if not branchname:
             # Use our default branch...
             branchname = 'develop'
         log.info('No branches key found in config file, using %r branch', branchname)
         result[branchname] = {}
+        result[branchname]['start'] = str(start)
+        result[branchname]['end'] = str(end)
         result[branchname].update(init_stats_dict())
 
         iter_commits(repo, result, branchname, start, end)
