@@ -91,25 +91,22 @@ def analyze(repo, config):
     wd = repo.working_tree_dir
     section = wd.rsplit("/", 1)[-1]
 
-    # HINT: Maybe better refactor it to:
-    # urls = list(getbranches(config.get(section,'branches',fallback=None)))
-    # if not urls:
-    #   branchname = config.get(section, 'branch', fallback=None)
-    #   start =  config.get(section, 'start', fallback='')
-    #   end =  config.get(section, 'end', fallback='')
-    #
-    #   if not branchname:
-    #      # Use our default branch...
-    #      branchname = 'develop'
-    #   urls = [(branchname, start, end)]
+    # Check if we have a "branches" section in the config. If not, fallback
+    # to develop branch:
+    urls = list(getbranches(config.get(section, 'branches', fallback=None)))
+    if not urls:
+       branchname = config.get(section, 'branch', fallback=None)
+       start =  config.get(section, 'start', fallback='')
+       end =  config.get(section, 'end', fallback='')
+
+       if not branchname:
+          # Use our default branch...
+          branchname = 'develop'
+       urls = [(branchname, start, end)]
 
 
-    for branchname, start, end in getbranches(config.get(section,
-                                                         'branches',
-                                                         fallback=None)
-                                              ):
+    for branchname, start, end in urls:
         result[branchname] = {}
-        log.info("start %s", start)
         result[branchname]['start'] = str(start)
         result[branchname]['end'] = str(end)
         try:
@@ -126,22 +123,6 @@ def analyze(repo, config):
         log.info("Investigating repo %r on branch %r...", repo.git_dir, branchname)
 
         result[branchname].update(init_stats_dict())
-        iter_commits(repo, result, branchname, start, end)
-
-    if not result:
-        branchname = config.get(section, 'branch', fallback=None)
-        start =  config.get(section, 'start', fallback='')
-        end =  config.get(section, 'end', fallback='')
-
-        if not branchname:
-            # Use our default branch...
-            branchname = 'develop'
-        log.info('No branches key found in config file, using %r branch', branchname)
-        result[branchname] = {}
-        result[branchname]['start'] = str(start)
-        result[branchname]['end'] = str(end)
-        result[branchname].update(init_stats_dict())
-
         iter_commits(repo, result, branchname, start, end)
 
     log.debug("Result dict is %r", result)
