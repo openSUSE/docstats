@@ -33,7 +33,14 @@ Statistics and Metrics for SUSE documentation team.
 Conceptual Overview
 ===================
 
-TBD
+The script :command:`docstats` performs the following tasks:
+
+#. Clone the repositories that are found in the configuration file.
+#. Iterate through all repositories and do:
+  #. Collect the diff statistics.
+  #. Collect the overall committers (usually reduced to team members only).
+  #. Collect bugtracker issue numbers from commit messages.
+#. Output as JSON file.
 
 
 Quick Start
