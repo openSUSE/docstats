@@ -56,7 +56,7 @@ def main(cliargs=None):
         return 20
 
     except (FileNotFoundError, OSError) as error:
-        log.error(error)
+        log.error(error)  # exc_info=1
         return 10
 
     except KeyboardInterrupt:
