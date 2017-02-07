@@ -3,7 +3,7 @@
 tools:
     pylint:
         python_version: 3     # Possible values: 2, 3
-            configfile: '.pylintrc'
+        # configfile: '.pylintrc'
 
 filter:
     excluded_paths:
