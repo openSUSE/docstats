@@ -6,6 +6,7 @@ from docstats.utils import (compare_usernames,
                             http_urlparse,
                             gettmpdir,
                             urlparse,
+                            findallmails,
                             findbugid,
                             findcommits,
                             )
@@ -214,3 +215,22 @@ def test_findcommits(text, expected):
 def test_compare_usernames(email, other, expected):
     assert compare_usernames(email, other) == expected
 
+
+@pytest.mark.parametrize('text,expected', [
+    # Empty text
+    ("", []),
+    #
+    (None, []),
+    #
+    ("tux@penguin.com", ['tux@penguin.com']),
+    #
+    ("tux@penguin.com tuxine@penguin.com", ['tux@penguin.com', 'tuxine@penguin.com']),
+    #
+    ("tux@penguin.com, tuxine@penguin.com", ['tux@penguin.com', 'tuxine@penguin.com']),
+    #
+    ("tux@penguin.com,tuxine@penguin.com", ['tux@penguin.com', 'tuxine@penguin.com']),
+    #
+    ("aa@aa.com,bb@bb.com,cc@cc.com", ['aa@aa.com', 'bb@bb.com', 'cc@cc.com']),
+])
+def test_findallmails(text, expected):
+    assert findallmails(text) == expected

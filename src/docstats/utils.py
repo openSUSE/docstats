@@ -278,3 +278,13 @@ def compare_usernames(user, other):
 
     return False
 
+
+def findallmails(text):
+    """Find all email addresses in a text
+
+    :param text: text with mail addresses (usually separated by commas or/and spaces)
+    :return: list
+    """
+    if text is None:
+        return []
+    return _RFC5322_REGEX.findall(text)
