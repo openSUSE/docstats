@@ -285,6 +285,14 @@ def findallmails(text):
     :param text: text with mail addresses (usually separated by commas or/and spaces)
     :return: list
     """
-    if text is None:
-        return []
-    return _RFC5322_REGEX.findall(text)
+    result = {}
+    if not text:
+        return result
+
+    for line in text.split('\n'):
+        if line.startswith('#'):
+            continue
+        primary, *mails = _RFC5322_REGEX.findall(line)
+        result[primary] = primary
+        result.update((key, primary) for key in mails)
+    return result

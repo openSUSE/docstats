@@ -218,19 +218,24 @@ def test_compare_usernames(email, other, expected):
 
 @pytest.mark.parametrize('text,expected', [
     # Empty text
-    ("", []),
+    ("", {}),
     #
-    (None, []),
+    (None, {}),
     #
-    ("tux@penguin.com", ['tux@penguin.com']),
+    ("tux@penguin.com", {'tux@penguin.com': 'tux@penguin.com'}),
     #
-    ("tux@penguin.com tuxine@penguin.com", ['tux@penguin.com', 'tuxine@penguin.com']),
+    ("tux@penguin.com tuxine@penguin.com", {'tux@penguin.com': 'tux@penguin.com',
+                                            'tuxine@penguin.com': 'tux@penguin.com'}),
     #
-    ("tux@penguin.com, tuxine@penguin.com", ['tux@penguin.com', 'tuxine@penguin.com']),
+    ("tux@penguin.com, tuxine@penguin.com", {'tux@penguin.com': 'tux@penguin.com',
+                                            'tuxine@penguin.com': 'tux@penguin.com'}),
     #
-    ("tux@penguin.com,tuxine@penguin.com", ['tux@penguin.com', 'tuxine@penguin.com']),
+    ("tux@penguin.com,tuxine@penguin.com", {'tux@penguin.com': 'tux@penguin.com',
+                                            'tuxine@penguin.com': 'tux@penguin.com'}),
     #
-    ("aa@aa.com,bb@bb.com,cc@cc.com", ['aa@aa.com', 'bb@bb.com', 'cc@cc.com']),
+    ("aa@aa.com,bb@bb.com,cc@cc.com", {'aa@aa.com': 'aa@aa.com',
+                                       'bb@bb.com': 'aa@aa.com',
+                                       'cc@cc.com': 'aa@aa.com'}),
 ])
 def test_findallmails(text, expected):
     assert findallmails(text) == expected
