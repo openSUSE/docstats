@@ -97,7 +97,8 @@ disable=W1617,W1621,W1608,W0704,W1604,E1605,W1633,W1605,E1606,W1623,W1619,W1631,
 [BASIC]
 
 # Required attributes for module, separated by a comma
-required-attributes=
+# Will be obsolete for Pylint 2.0
+# required-attributes=
 
 # List of builtins function names that should not be used, separated by a comma
 bad-functions=map,filter
