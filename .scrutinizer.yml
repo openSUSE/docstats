@@ -13,19 +13,9 @@ changetracking:
     bug_patterns: ["\bfix(?:es|ed)?\b"]
     feature_patterns: ["\badd(?:s|ed)?\b", "\bimplement(?:s|ed)?\b"]
 
-build:
-    environment:
-        python: 3.6.0
-    dependencies:
-        before:
-            - pip install -r travis_requirements.txt
-    tests:
-        override:
-            - 
-              command: py.test -l -vv --no-cov-on-fail --cov=docstats --cov-report=term-missing
-              coverage:
-                  file: .coverage
-                  config: .coveragerc
-                  format: py-cc
-
-
+#build:
+#    environment:
+#        python: 3.6.0
+#    dependencies:
+#        before:
+#            - pip install -r travis_requirements.txt
