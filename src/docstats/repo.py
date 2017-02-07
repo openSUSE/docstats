@@ -101,11 +101,11 @@ def iter_commits(config, repo, dictresult, name, branchname, start=None, end=Non
     start = '' if start is None else start
     end = '' if end is None else end
 
-    rev = "..".join([start, end])
-    if rev == '..':
+    rev = "...".join([start, end])
+    if rev == '...':
         rev = repo.head
 
-    log.info("Using %s(start=%r, end=%r)", branchname, start, end)
+    log.info("Using %s(start=%r, end=%r) %s", branchname, start, end, rev)
 
     for idx, commit in enumerate(repo.iter_commits(rev), 1):
         # Collect the statistics information
