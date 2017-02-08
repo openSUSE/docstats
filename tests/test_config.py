@@ -115,22 +115,24 @@ def test_geturls_with_patching_empty_url(mock_config):
     #
     ('', []),
     #
-    ('''br/a
-    ''', [('br/a', '', '')]),
+    ('''name br/a
+    ''', [('name', 'br/a', '', '')]),
     #
     ('''
  # br/null  adfadf..affee
- br/a   abc..def
+ name br/a   abc..def
  # This is an additional comment
- br/b
-''', [('br/a', 'abc', 'def'), ('br/b', '', '')]),
+ name br/b
+''', [('name', 'br/a', 'abc', 'def'), ('name', 'br/b', '', '')]),
     #
     ('''
  # br/null  adfadf..affee
- br/a   abc..
- br/b   ..def
- br/c   bcd..eff
-''', [('br/a', 'abc', ''), ('br/b', '', 'def'), ('br/c', 'bcd', 'eff')])
+ name  br/a   abc..
+ name br/b   ..def
+ name br/c   bcd..eff
+''', [('name', 'br/a', 'abc', ''),
+      ('name', 'br/b', '', 'def'),
+      ('name', 'br/c', 'bcd', 'eff')])
 
 ])
 def test_getbranches(string, expected):
