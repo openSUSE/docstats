@@ -22,7 +22,11 @@ import logging
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 from docstats.log import log, setloglevel
+import csv
 import json
+import os
+import matplotlib.pyplot as plt
+from contextlib import contextmanager
 
 
 def parsecli(cliargs=None):
@@ -39,11 +43,117 @@ def loadfile(filename):
         data = json.load(f)
     return data
 
+
+@contextmanager
+def plotting(filename, title):
+    fig = plt.figure()
+    plt.title(title)
+    yield fig
+    plt.savefig(filename)
+    plt.close(fig)
+
+
+def autolabel(rects):
+    # attach some text labels
+    for rect in rects:
+        height = rect.get_height()
+        plt.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                '%d' % int(height),
+                ha='center', va='bottom')
+
+
+def correctdata(data):
+    """
+
+    :param data:
+    :return:
+    """
+    content = { 'bsc': [],
+                'fate': [],
+                'bnc': [],
+                'gh': [],
+                'trello': [],
+                "doccomments": [],
+                #
+                'team-committers':0,
+                'external-committers':0,
+                #
+                'insertions':0,
+                'deletions': 0,
+                'lines': 0,
+                'files': 0,
+                'commits': 0,
+                }
+    # To make the data consistent, we assume a (none-existant) update
+    for item in ('cloud5-update', 'cloud6-update'):
+        data.setdefault(item, content.copy())
+
+    bugtrackers = ('fate', 'bnc', 'bsc', 'trello', 'gh', 'doccomments')
+    for bug in bugtrackers:
+        for key in data:
+            # print("key=%r, bug=%r -> %s" % (key, bug, type(data[key][bug])))
+            data[key][bug] = len(data[key][bug])
+
+
+def plot_data(data):
+    """Plot the data
+
+    :param data:
+    :return:
+    """
+    # fig = plt.figure()
+
+    with plotting('cloud.png', 'Cloud Comparisons') as fig:
+        plt.xlabel('Cloud Release')
+        plt.ylabel('# Bug numbers')
+        fig.autofmt_xdate() # rotation=90
+        y = []
+        labels = []
+        for key in sorted(data):
+            print('.', end='')
+            y.append(data[key]['bnc'])
+            labels.append(" ".join(key.split('-')))
+
+        N = len(y)
+        x = range(1, N+1)
+        # print(">>>", x, y, labels)
+        rects = plt.bar(x, y, color="blue", align='center', alpha=0.8, )
+        #for a,b, text in zip(x, y, labels):
+        #    plt.text(a, b, str(text), horizontalalignment='center')
+        # autolabel(rects)
+        plt.xticks(x, labels)
+
+
+def convertdata2csv(data, filename):
+    """Convert some data to CSV
+
+    :param data:
+    :return:
+    """
+    with open(filename, 'wt') as csvfile:
+        fields = ['release',
+                  'commits', 'insertions', 'deletions', 'lines',
+                  'fate', 'bnc', 'bsc', 'files', 'trello', 'gh', 'doccomments',
+                  'team-committers', 'external-committers',
+                  ]
+        writer = csv.writer(csvfile)
+        writer.writerow(fields)
+        for key in sorted(data):
+            row = []
+            row.append(key)
+            row.extend([data[key][field] for field in fields[1:]])
+            writer.writerow(row)
+    print("Wrote %r" % filename)
+
+
 if __name__ == "__main__":
     args = parsecli()
     log.info(args)
     filename = args['FILE']
     data = loadfile(filename)
-    for key in sorted(data):
-        print(key)
+    correctdata(data)
+    convertdata2csv(data, ".".join([os.path.splitext(filename)[0], 'csv']))
+
+    plot_data(data)
+
     print("Done")
