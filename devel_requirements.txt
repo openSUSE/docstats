@@ -3,6 +3,7 @@
 
 -r requirements.txt
 -r travis_requirements.txt
+tox
 flake8
 bumpversion
 prospector

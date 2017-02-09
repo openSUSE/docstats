@@ -1,5 +1,23 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
+#
+# Copyright (c) 2017 SUSE Linux GmbH
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+#
+
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -23,9 +41,27 @@ def read(*names, **kwargs):
     ).read()
 
 
+def requires(filename):
+    """Returns a list of all pip requirements
+
+    :param filename: the Pip requirement file (usually 'requirements.txt')
+    :return: list of modules
+    :rtype: list
+    """
+    modules = []
+    with open(filename, 'r') as pipreq:
+        for line in pipreq:
+            line = line.strip()
+            if line.startswith('#') or not line:
+                continue
+            modules.append(line)
+    return modules
+
+
+# -----------------------------------------------------------------------------
 setup(
-    name='suse-docstats',
-    version='0.1.0',
+    name='docstats',
+    version='0.1.1',
     license='BSD',
     description='Statistics and Metrics for Documentation Team',
     long_description='%s\n%s' % (
@@ -42,7 +78,7 @@ setup(
     zip_safe=False,
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: Unix',
@@ -59,16 +95,9 @@ setup(
 
     ],
     keywords=[
-        # eg: 'keyword1', 'keyword2', 'keyword3',
+        'stats', 'statistics', 'doc', 'documentation',
     ],
-    install_requires=[
-        # eg: 'aspectlib==1.1.1', 'six>=1.7',
-    ],
-    extras_require={
-        # eg:
-        #   'rst': ['docutils>=0.11'],
-        #   ':python_version=="2.6"': ['argparse'],
-    },
+    install_requires=requires('requirements.txt'),
 
     # Testing:
     setup_requires=['pytest-runner', ],
@@ -76,8 +105,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'docstats = docstats.cli:main',
-            'suse-docstats = docstats.cli:main',
+            'docstats = docstats.main:main',
+            'suse-docstats = docstats.main:main',
         ]
     },
 )
