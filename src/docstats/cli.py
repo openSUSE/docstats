@@ -36,21 +36,107 @@
 
 Usage:
    docstats [-h | --help]
-   docstats [-v...] [options] CONFIGFILE
+   docstats [--version]
+   docstats <command> [<args>...]
 
 Options:
     -h, --help             Shows this help
-    -v                     Raise verbosity level
-    --jobs=N, -j N         Allow N jobs at once [default: 1]
-    --sections=NAME, -s NAME
-                           Select one or more sections from configuration file only (default all)
-                           separated  by comma
     --version              Prints the version
-    CONFIGFILE             The configuration file which contains all to repos to investigate
+
+The subcommands are:
+   analyze, an      clone and analyze the repos found in the config file
+   visualize, vis   visualize the result
 """
 
 from docopt import docopt, DocoptExit
 import os
+from .config import parseconfig
+from .utils import gettmpdir
+from .worker import work
+from textwrap import dedent
+
+
+class AbstractCommand:
+    """Base class for the commands"""
+
+    def __init__(self, cmdargs, global_args):
+        """Initialize the commands.
+
+        :param cmdargs: arguments of the command
+        :param global_args: arguments of the program
+        """
+        self.args = docopt(dedent(self.__doc__), argv=cmdargs)
+        self.global_args = global_args
+        self.checkargs()
+        # print(">>> cmdargs:", cmdargs, global_args, self.args)
+
+    def checkargs(self):
+        try:
+            self.args['--jobs'] =  int(self.global_args['--jobs'])
+        except ValueError:
+            raise DocoptExit("Option -j/--jobs does not contain a number")
+
+    def execute(self):
+        """Execute the commands"""
+        raise NotImplementedError
+
+
+class Analyze(AbstractCommand):
+    """
+    Clone and analyze the repos found in the config file
+
+    Usage:
+        analyze [-h | --help]
+        analyze [-v...] [options] CONFIGFILE
+
+    Abbreviation:
+        an
+
+    Options:
+        -h, --help         Shows this help
+        -v                 Raise verbosity level
+        --sections=NAME, -s NAME
+                           Select one or more sections from configuration file only (default all)
+                           separated  by comma
+        CONFIGFILE         The configuration file which contains all to repos to investigate
+    """
+    abbrev = "an"
+    config = None
+
+    def execute(self):
+        print('>>> {}: globals={}, args={}'.format(self.__class__.__name__.lower(),
+                              self.global_args,
+                              self.args))
+        configfile = self.args['CONFIGFILE']
+        _, self.config = parseconfig(configfile)
+        basedir = gettmpdir(self.config.get('globals', 'tempdir', fallback=None))
+        os.makedirs(basedir, exist_ok=True)
+        work(self.config, basedir, sections=self.args['--sections'], jobs=self.args['--jobs'])
+
+
+
+class Visualize(AbstractCommand):
+    """
+    Visualize the result
+
+    Usage:
+       visualize [-h | --help]
+       visualize [-v...] [options] JSONFILE
+
+    Abbreviation:
+       vis
+
+    Options:
+       -h, --help   Shows this help
+       -v           Raise verbosity level
+       JSONFILE     The JSON file from the 'analyze' step
+    """
+    abbrev = 'vis'
+
+    def execute(self):
+        print('{}: globals={}, args={}'.format(self.__class__.__name__,
+                                               self.global_args,
+                                               self.args))
 
 
 def parsecli(cliargs=None):
@@ -62,9 +148,35 @@ def parsecli(cliargs=None):
     """
     from docstats import __version__
     version = "%s %s" % (__package__, __version__)
-    args = docopt(__doc__, argv=cliargs, version=version)
+    args = docopt(__doc__, argv=cliargs, version=version, options_first=True)
 
-    checkcliargs(args)
+    cmdname = args.pop('<command>')
+    cmdargs = args.pop('<args>')
+    commandlist = [Analyze, Visualize]
+    commands = {}
+
+    for cls in commandlist:
+        commands[cls.__name__.lower()] = cls
+        commands[cls.abbrev] = cls
+    print(">>>", commands, cmdname)
+
+    if cmdargs is None:
+        cmdargs = {}
+
+    # After 'poping' '<command>' and '<args>', what is left in the args dictionary are the global arguments.
+    # Retrieve the class from the 'commands' module.
+    try:
+        cmdclass = commands[cmdname]
+    except AttributeError:
+        raise DocoptExit('Unknown command %r' % cmdname)
+
+    # Create an instance of the command.
+    cmd = cmdclass(cmdargs, args)
+
+    # Execute the command.
+    cmd.execute()
+
+    # checkcliargs(args)
     return args
 
 

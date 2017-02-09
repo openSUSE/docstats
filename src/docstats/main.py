@@ -37,8 +37,8 @@ def main(cliargs=None):
         setloglevel(args['-v'])
         log.info(args)
 
-        configfile = args['CONFIGFILE']
-        files, config = parseconfig(configfile)
+        #configfile = args['CONFIGFILE']
+        #files, config = parseconfig(configfile)
 
         # print(args)
         # print(config)
@@ -47,9 +47,9 @@ def main(cliargs=None):
         # print("branch", config['doc-slert']['branch'])
         # print("url", config['doc-slert']['url'])
         # ----
-        basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
-        os.makedirs(basedir, exist_ok=True)
-        work(config, basedir, sections=args['--sections'], jobs=args['--jobs'])
+        # basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
+        # os.makedirs(basedir, exist_ok=True)
+        # work(config, basedir, sections=args['--sections'], jobs=args['--jobs'])
 
     except (DuplicateSectionError, DuplicateOptionError) as error:
         log.error(error)
