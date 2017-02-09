@@ -217,7 +217,7 @@ def analyze(repo, config):
             result[name] = {'error': error}
             continue
 
-        log.info("Investigating repo %r on branch %r...", repo.git_dir, branchname)
+        log.info("Investigating %s on repo %r for branch %r...", name, repo.git_dir, branchname)
 
         result[name].update(init_stats_dict())
         iter_commits(config, repo, result, name, branchname, start, end)
