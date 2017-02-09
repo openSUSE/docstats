@@ -2,8 +2,8 @@
 
 :orphan:
 
-docstats -- Manual Page
-===========================
+docstats |version| -- Manual Page
+=================================
 
 
 Synopsis
