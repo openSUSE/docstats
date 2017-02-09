@@ -76,10 +76,12 @@ def git_repo():
     :rtype: :class:`git.Repo`
     """
     gtmpdir = gittmpdir()
+    result = {}
     repo = git.Repo.init(path=gtmpdir.strpath, mkdir=True)
 
     tux = git.Actor('Tux Penguin', 'tux@example.org')
     wilber = git.Actor("Wilber Gimp", 'wilber@example.net')
+    committers = [tux, wilber]
     with changedir(gtmpdir) as cwd:
         # Create two files
         local("fox.txt").write("The quick brown fox")
@@ -97,5 +99,9 @@ def git_repo():
         repo.index.commit("Add equal sign line", committer=wilber, author=wilber)
 
 
-    yield repo
+    # Create some statistics
+    result['commits'] = 3
+    result['committer_mails'] = {user.email for user in committers}
+    yield result, repo
+
     # Possible removal of the git repo
