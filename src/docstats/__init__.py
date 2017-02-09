@@ -18,7 +18,7 @@
 
 import logging
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "Thomas Schraitle"
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
