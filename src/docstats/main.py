@@ -17,7 +17,7 @@
 #
 
 from .cli import parsecli
-from .config import parseconfig, geturls
+from .config import parseconfig
 from configparser import DuplicateSectionError, DuplicateOptionError
 from .log import log, setloglevel
 from .utils import gettmpdir

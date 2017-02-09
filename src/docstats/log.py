@@ -21,9 +21,9 @@ Logging setup
 """
 
 import logging
-import logging.config
 import sys
-from os import path
+# import logging.config
+# from os import path
 
 __all__ = ('log', 'loggit', 'setloglevel', 'LOGLEVELS',)
 
@@ -53,7 +53,6 @@ LOGLEVELS = {None: logging.NOTSET,  # 0
              1: logging.INFO,       # 20
              2: logging.DEBUG,      # 10
              }
-
 
 
 def setloglevel(verbose):

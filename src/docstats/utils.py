@@ -37,13 +37,12 @@ _DOMAIN_REPO_REGEX = (r'(?P<domain>{domain}+)/'
                                  )
                       )
 _GITURL_REGEX = re.compile(r'(?P<user>{user}+)@'
-                        r'(?P<server>{server}+):'
-                        r'{domainrepo}+'
-                        r''.format(user=_USER_REGEX,
-                                   server=_SERVER_REGEX,
-                                   domainrepo=_DOMAIN_REPO_REGEX,
-                                   )
-                           )
+                           r'(?P<server>{server}+):'
+                           r'{domainrepo}+'
+                           r''.format(user=_USER_REGEX,
+                                      server=_SERVER_REGEX,
+                                      domainrepo=_DOMAIN_REPO_REGEX,
+                                      ))
 
 _GITDOMAIN_REPO_REGEX = re.compile(_DOMAIN_REPO_REGEX)
 
@@ -64,12 +63,11 @@ _BUGTRACKER_REGEXES = (
                r'\s?#(?P<id>\d{1,9})', re.IGNORECASE),
 
     # external GitHub repositories
-    re.compile(r'(?P<github>[fF]ix(?:es|ed)?|' + \
-               r'[cC]lose[sd]?|' + \
-               r'[rR]esolve[sd]?)' + \
-               r'\s?' + \
-               r'%s#(?P<id>\d{1,9})' % _DOMAIN_REPO_REGEX
-    ),
+    re.compile(r'(?P<github>[fF]ix(?:es|ed)?|'
+               r'[cC]lose[sd]?|'
+               r'[rR]esolve[sd]?)'
+               r'\s?'
+               r'%s#(?P<id>\d{1,9})' % _DOMAIN_REPO_REGEX),
 
     # see https://en.opensuse.org/openSUSE:Creating_a_changes_file_(RPM)#Bug_fix.2C_feature_implementation
     # https://en.opensuse.org/openSUSE:Packaging_Patches_guidelines#Current_set_of_abbreviations
@@ -111,7 +109,7 @@ def http_urlparse(url):
     groupdict = {'user': None, 'server': pr.netloc}
     path = pr.path[:-4] if pr.path.endswith('.git') else pr.path
 
-    match =_GITDOMAIN_REPO_REGEX.search(path)
+    match = _GITDOMAIN_REPO_REGEX.search(path)
     if match is None:
         # this should not happen...
         raise ValueError('Could not find any matching parts in your Git URL: %r' % url)
@@ -188,7 +186,7 @@ def findbugid(text):
     # Order must match the regexes in _BUGTRACKER_REGEXES
     functions = [_github, _ext_github, _bugtracker, _cve]
 
-    result = [ ]
+    result = []
     # Iterate through all possible regexes and deliver a tuple of
     # (regex, func). The "func" part is used to "cleanup" the matching
     for regex, func in zip(_BUGTRACKER_REGEXES, functions):

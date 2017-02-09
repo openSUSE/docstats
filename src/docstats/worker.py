@@ -33,22 +33,17 @@ from .repo import analyze
 def clone_repo(url, gitdir):
     """Clone the Git repository
 
-    :param str section: the section from the configuration file
     :param str url: the URL of the Git repository
-    :param str tmpdir: the temporary directory to clone to
-    :return: ???
+    :param str gitdir: the temporary directory to clone to
+    :return: the repository
+    :rtype: :class:`git.Repo`
     """
 
     if os.path.exists(gitdir):
         log.debug("URL %r alread cloned, using %r.", url, gitdir)
-        # return pygit2.Repository(gitdir)
         return git.Repo(gitdir)
 
-    # print("%s: Cloning url=%r to %r" % (current_thread().name, url, gitdir))
-    start = time()
     repo = git.Repo.clone_from(url, gitdir)
-    # repo = pygit2.clone_repository(url, gitdir )  # pygit2.UserPass('', '')
-    end = time()
     return repo
 
 
@@ -65,14 +60,13 @@ def clone_and_analyze(url, gitdir, config):
     return analyze(repo, config)
 
 
-
 def work(config, basedir, sections=None, jobs=1):
     """Working off all Git URLs
 
     :param config: a list or generator of urls
     :type config: :class:`configparser.ConfigParser`
     :param str basedir: the temporary base directory
-    :param section: the section to use
+    :param list sections: the sections to use
     :param int jobs: integer number of workers to create [default: 1]
     :return: ???
     """

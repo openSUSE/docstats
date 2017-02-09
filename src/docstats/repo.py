@@ -22,8 +22,6 @@ from git import GitCommandError
 import json
 from .utils import TRACKERS, findallmails, findbugid
 
-import statistics
-
 
 def collect_diffstats(commit, dictresult):
     """Collect all the diff statistics like additions, deletions, file changes etc.
@@ -186,15 +184,14 @@ def analyze(repo, config):
     # to develop branch:
     urls = list(getbranches(config.get(section, 'branches', fallback=None)))
     if not urls:
-       branchname = config.get(section, 'branch', fallback=None)
-       start =  config.get(section, 'start', fallback='')
-       end =  config.get(section, 'end', fallback='')
+        branchname = config.get(section, 'branch', fallback=None)
+        start = config.get(section, 'start', fallback='')
+        end = config.get(section, 'end', fallback='')
 
-       if not branchname:
-          # Use our default branch...
-          branchname = 'develop'
-       urls = [(branchname, branchname, start, end)]
-
+        if not branchname:
+            # Use our default branch...
+            branchname = 'develop'
+        urls = [(branchname, branchname, start, end)]
 
     for name, branchname, start, end in urls:
         # Initialize

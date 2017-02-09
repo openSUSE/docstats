@@ -79,11 +79,10 @@ def checkcliargs(args):
 
     try:
         args['--jobs'] = int(args['--jobs'])
-    except ValueError as error:
+    except ValueError:
         raise DocoptExit("Option -j/--jobs does not contain a number")
 
     args['--sections'] = None if args['--sections'] is None else args['--sections'].split(',')
-
 
     if configfile is None:
         raise DocoptExit("Expected config file")
