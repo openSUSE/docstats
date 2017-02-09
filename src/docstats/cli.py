@@ -44,7 +44,7 @@ Options:
     --jobs=N, -j N         Allow N jobs at once [default: 1]
     --sections=NAME, -s NAME
                            Select one or more sections from configuration file only (default all)
-                           seüarated  by comma
+                           separated  by comma
     --version              Prints the version
     CONFIGFILE             The configuration file which contains all to repos to investigate
 """

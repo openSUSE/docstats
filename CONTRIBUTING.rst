@@ -5,6 +5,7 @@ Contributing
 Contributions are welcome, and they are greatly appreciated! Every
 little bit helps, and credit will always be given.
 
+
 Bug reports
 ===========
 
@@ -14,12 +15,6 @@ When `reporting a bug <https://github.com/openSUSE/docstats/issues>`_ please inc
     * Any details about your local setup that might be helpful in troubleshooting.
     * Detailed steps to reproduce the bug.
 
-Documentation improvements
-==========================
-
-docstats could always use more documentation, whether as part of the
-official docstats docs, in docstrings, or even on the web in blog posts,
-articles, and such.
 
 Feature requests and feedback
 =============================
@@ -32,34 +27,38 @@ If you are proposing a feature:
 * Keep the scope as narrow as possible, to make it easier to implement.
 * Remember that this is a volunteer-driven project, and that code contributions are welcome :)
 
+
 Development
 ===========
 
 To set up `docstats` for local development:
 
-1. Fork `docstats <https://github.com/openSUSE/docstats>`_
-   (look for the "Fork" button).
+1. `Fork docstats <https://github.com/openSUSE/docstats#fork-destination-box>`_.
 2. Clone your fork locally::
 
     git clone git@github.com:your_name_here/docstats.git
 
 3. Create a branch for local development::
 
-    git checkout -b name-of-your-bugfix-or-feature
+    git checkout -b NAME-OF-YOUR-BUGFIX-OR-FEATURE
 
    Now you can make your changes locally.
 
-4. When you're done making changes, run all the checks, doc builder and spell checker with `tox <http://tox.readthedocs.org/en/latest/install.html>`_ one command::
+4. When you're done making changes, run all the checks with the commands::
 
-    tox
+    pyvenv .env
+    source .env/bin/activate
+    pip install -r devel_requirements.txt
+    py.test -v
 
 5. Commit your changes and push your branch to GitHub::
 
     git add .
     git commit -m "Your detailed description of your changes."
-    git push origin name-of-your-bugfix-or-feature
+    git push origin NAME-OF-YOUR-BUGFIX-OR-FEATURE
 
 6. Submit a pull request through the GitHub website.
+
 
 Pull Request Guidelines
 -----------------------
@@ -68,12 +67,12 @@ If you need some code review or feedback while you're developing the code just m
 
 For merging, you should:
 
-1. Include passing tests (run ``tox``) [1]_.
+1. Include passing tests (run ``py,test``) [1]_.
 2. Update documentation when there's new API, functionality etc.
 3. Add a note to ``CHANGELOG.rst`` about the changes.
 4. Add yourself to ``AUTHORS.rst``.
 
-.. [1] If you don't have all the necessary python versions available locally you can rely on Travis - it will
+.. [1] If you don't have all the necessary Python versions available locally you can rely on Travis - it will
        `run the tests <https://travis-ci.org/openSUSE/docstats/pull_requests>`_ for each change you add in the pull request.
 
        It will be slower though ...
@@ -83,8 +82,5 @@ Tips
 
 To run a subset of tests::
 
-    tox -e envname -- py.test -k test_myfeature
+    py.test -k test_myfeature
 
-To run all the test environments in *parallel* (you need to ``pip install detox``)::
-
-    detox

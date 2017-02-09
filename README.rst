@@ -27,7 +27,30 @@ Overview
 
 Statistics and Metrics for SUSE documentation team.
 
-* Free software: GPL 3.0+
+* Free software: GPL 3.0
+
+
+Conceptual Overview
+===================
+
+The script :command:`docstats` performs the following tasks:
+
+#. Clone the repositories that are found in the configuration file.
+#. Iterate through all repositories and do:
+  #. Collect the diff statistics.
+  #. Collect the overall committers (usually reduced to team members only).
+  #. Collect bugtracker issue numbers from commit messages.
+#. Output as JSON file.
+
+
+Quick Start
+===========
+
+To use the program without :command:`pip` and virtual environment (but with all
+the dependencies), use the following command after cloning this repository::
+
+    $ PYTHONPATH=src python3 -m docstats -h
+
 
 
 Conceptual Overview
