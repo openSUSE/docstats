@@ -61,7 +61,7 @@ def requires(filename):
 # -----------------------------------------------------------------------------
 setup(
     name='docstats',
-    version='0.1.1',
+    version='0.1.2',
     license='BSD',
     description='Statistics and Metrics for Documentation Team',
     long_description='%s\n%s' % (
