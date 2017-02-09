@@ -66,22 +66,22 @@ def geturls(config, sections=None):
             continue
 
 
-def getbranchparts(string):
+def getbranchparts(string, stdbranch='develop'):
     """Generator: Yields its branch name and optional start/end dates from a string
 
     For example:
-    >>> list(getbranchparts('maintenance/SLE12'))
-    [('maintenance/SLE12', '', '')]
-    >>> list(getbranchparts('maintenance/SLE12   abc'))
-    [('maintenance/SLE12', 'abc', '')]
-    >>> list(getbranchparts('maintenance/SLE12   abc..'))
-    [('maintenance/SLE12', 'abc', '')]
-    >>> list(getbranchparts('maintenance/SLE12   ..abc'))
-    [('maintenance/SLE12', '', 'abc')]
-    >>> list(getbranchparts('maintenance/SLE12   abc..def'))
-    [('maintenance/SLE12', 'abc', 'def')]
+    >>> list(getbranchparts('name maintenance/SLE12'))
+    [('name', 'maintenance/SLE12', '', '')]
+    >>> list(getbranchparts('name maintenance/SLE12   abc'))
+    [('name', 'maintenance/SLE12', 'abc', '')]
+    >>> list(getbranchparts('name maintenance/SLE12   abc..'))
+    [('name', 'maintenance/SLE12', 'abc', '')]
+    >>> list(getbranchparts('name maintenance/SLE12   ..abc'))
+    [('name', 'maintenance/SLE12', '', 'abc')]
+    >>> list(getbranchparts('name maintenance/SLE12   abc..def'))
+    [('name', 'maintenance/SLE12', 'abc', 'def')]
 
-    :param string: a string in the format "BRANCHNAME [[START][..][END]]
+    :param string: a string in the format "NAME BRANCHNAME [[START][..][END]]
     :return: a tuple in the form "(branchname, start, end)"; the start and end parts can be an empty string
     :rtype: generator
     """
@@ -89,14 +89,17 @@ def getbranchparts(string):
     data = ' '.join(string.strip().split()).split(' ')
 
     if len(data) == 1:
-        yield data[0], '', ''
+        yield data[0], stdbranch, '', ''
+    elif len(data) == 2:
+        yield data[0], data[1], '', ''
     else:
-        branchname = data[0]
-        data = data[1].split('..')
+        name = data[0]
+        branchname = data[1]
+        data = data[2].split('..')
         if len(data) == 1:
-            yield branchname, data[0], ''
+            yield name, branchname, data[0], ''
         else:
-            yield branchname, data[0], data[1]
+            yield name, branchname, data[0], data[1]
 
 
 def getbranches(branches):
@@ -104,9 +107,9 @@ def getbranches(branches):
 
     [section]
     branches =
-        branch/a  abc
-        branch/b  ..def
-        branch/c  cde..eff
+        nameA  branch/a  abc
+        nameB  branch/b  ..def
+        nameC  branch/c  cde..eff
         # branch/d
 
     :param branches: a string of the branches key from the config file or None

@@ -17,20 +17,85 @@
 #
 
 from .config import getbranches
-from collections import Counter, defaultdict
 from .log import log
 from git import GitCommandError
 import json
+from .utils import TRACKERS, findallmails, findbugid
 
 import statistics
 
 
-def iter_commits(repo, dictresult, branchname, start=None, end=None):
+def collect_diffstats(commit, dictresult):
+    """Collect all the diff statistics like additions, deletions, file changes etc.
+
+    :param commit: the commit
+    :type commit: :class:`git.Commit`
+    :param dict dictresult: the result of the dictionary
+    """
+    for item in commit.stats.total:
+            dictresult[item] += commit.stats.total[item]
+
+
+def collect_committers(commit, dictresult, committers):
+    """Collect all the committers, be it inside or outside of a team.
+       A commiter is identified as a team member is his email address is
+       in the list of the committers.
+
+    :param commit:  the commit
+    :type commit: :class:`git.Commit`
+    :param dict dictresult: the result of the dictionary
+    :param committers: ditionary of all team mails with items in the form of "mail": "primary-mail"
+    :type committers: dict
+    """
+    mail = commit.committer.email.lower()
+    if mail in committers:
+        key = 'team-committers'
+        mail = committers.get(mail)
+    else:
+        key = 'external-committers'
+
+    dictresult[key].append(mail)
+    dictresult[key+'-mails'].append(mail)
+
+
+def collect_issues(commit, dictresult):
+    """Collect all the issues that can be find in a commit message
+
+    :param commit:  the commit
+    :type commit: :class:`git.Commit`
+    :param dict dictresult: the result of the dictionary; the dict will be changed after the
+                            function has been called
+    """
+
+    # Initialize the trackers with an empty set if needed
+    for tracker in TRACKERS:
+        if not dictresult.get(tracker):
+            dictresult[tracker] = []
+
+    # Go through each summary and message and try to find issue tracker information
+    for msg in [commit.summary, commit.message]:
+        for tracker, issue in findbugid(msg):
+            if tracker in TRACKERS:
+                dictresult[tracker].append(issue)
+            elif tracker[:3] in ('fix', 'clo', 'res'):
+                dictresult['gh'].append(issue)
+
+    return dictresult
+
+
+def iter_commits(config, repo, dictresult, name, branchname, start=None, end=None):
     """Iterate through all commits
 
-    :param repo:
-    :param dictresult:
+    :param config: the docstats configuration contents
+    :type config: :class:`configparser.ConfigParser`
+    :param repo: a repository
+    :type repo: :class:`git.Repo`
+    :param dict dictresult: the result of the dictionary; the dict will be changed after the
+                            function has been called
+    :param str name: name of the observable branch
     :param str branchname: the name of the branch
+    :param start: the start position or None
+    :param end: the end position or None
     :return:
     """
     start = '' if start is None else start
@@ -40,14 +105,23 @@ def iter_commits(repo, dictresult, branchname, start=None, end=None):
     if rev == '..':
         rev = repo.head
 
-    log.info("Using start=%r", start)
-    log.info("Using end=%r", end)
+    log.info("Using %s(start=%r, end=%r) %s", branchname, start, end, rev)
 
     for idx, commit in enumerate(repo.iter_commits(rev), 1):
-        for item in commit.stats.total:
-            dictresult[branchname][item] += commit.stats.total[item]
+        # Collect the statistics information
+        collect_diffstats(commit, dictresult[name])
+
+        # Collect the committers
+        committers = findallmails(config.defaults().get('team-mails', []))
+        collect_committers(commit, dictresult[name], committers)
+
+        # Collect the bug issues from different trackers
+        collect_issues(commit, dictresult[name])
+
     # Save overall commits:
-    dictresult[branchname]['commits'] = idx
+    dictresult[name]['commits'] = idx
+
+    return dictresult
 
 
 def init_stats_dict():
@@ -60,11 +134,28 @@ def init_stats_dict():
     return {item: 0 for item in ('deletions', 'files', 'insertions', 'lines')}
 
 
+def cleanup_dict(dictresult):
+    """Cleanup step to turn all sets into list to make sure it is serialized by JSON
+
+    :param dict dictresult: the result of the dictionary; the dict will be changed after the
+                            function has been called
+    """
+    for branch in dictresult:
+        #
+        for tracker in TRACKERS:
+            dictresult[branch][tracker] = list(set(dictresult[branch][tracker]))
+        # Make committers unique and count them:
+        dictresult[branch]['team-committers'] = len(set(dictresult[branch]['team-committers']))
+        dictresult[branch]['external-committers'] = len(set(dictresult[branch]['external-committers']))
+        dictresult[branch]['team-committers-mails'] = list(set(dictresult[branch]['team-committers-mails']))
+        dictresult[branch]['external-committers-mails'] = list(set(dictresult[branch]['external-committers-mails']))
+
+
 def analyze(repo, config):
     """Analyze the repositories given at queue
 
-    :param queue: a queue
-    :type queue: :class:`queue.Queue`
+    :param repo: a repository
+    :type repo: :class:`git.Repo`
     :param config: the docstats configuration contents
     :type config: :class:`configparser.ConfigParser`
     :return: dictionary with data
@@ -102,14 +193,23 @@ def analyze(repo, config):
        if not branchname:
           # Use our default branch...
           branchname = 'develop'
-       urls = [(branchname, start, end)]
+       urls = [(branchname, branchname, start, end)]
 
 
-    for branchname, start, end in urls:
-        result[branchname] = {}
-        result[branchname]['start'] = str(start)
-        result[branchname]['end'] = str(end)
+    for name, branchname, start, end in urls:
+        # Initialize
+        result[name] = {}
+        result[name]['branch'] = branchname
+        result[name]['start'] = str(start)
+        result[name]['end'] = str(end)
+        result[name]['team-committers'] = []
+        result[name]['external-committers'] = []
+        result[name]['team-committers-mails'] = []
+        result[name]['external-committers-mails'] = []
+
         try:
+            # head = repo.create_head(branchname)
+            # head.checkout(branchname)
             repo.git.checkout(branchname)
         except GitCommandError as error:
             # error contains the following attributes:
@@ -117,13 +217,15 @@ def analyze(repo, config):
             # .stderr, .stdout, .status, .command
             log.error(error)
             # We want to have it in the result dict too:
-            result[branchname] = {'error': error}
+            result[name] = {'error': error}
             continue
 
         log.info("Investigating repo %r on branch %r...", repo.git_dir, branchname)
 
-        result[branchname].update(init_stats_dict())
-        iter_commits(repo, result, branchname, start, end)
+        result[name].update(init_stats_dict())
+        iter_commits(config, repo, result, name, branchname, start, end)
+
+    cleanup_dict(result)
 
     log.debug("Result dict is %r", result)
 

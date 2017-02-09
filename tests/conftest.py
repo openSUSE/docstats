@@ -70,14 +70,16 @@ def gittmpdir():
 
 @pytest.fixture(scope="session")
 def git_repo():
-    """Fixture to create a test Git repository
+    """Fixture to create a test Git repository with several commits
 
-    :return:
+    :return: temporary repository
+    :rtype: :class:`git.Repo`
     """
     gtmpdir = gittmpdir()
     repo = git.Repo.init(path=gtmpdir.strpath, mkdir=True)
 
     tux = git.Actor('Tux Penguin', 'tux@example.org')
+    wilber = git.Actor("Wilber Gimp", 'wilber@example.net')
     with changedir(gtmpdir) as cwd:
         # Create two files
         local("fox.txt").write("The quick brown fox")
@@ -92,7 +94,7 @@ def git_repo():
 
         local("README.txt").write("==================", mode="a")
         repo.index.add(['README.txt'])
-        repo.index.commit("Add equal sign line", committer=tux, author=tux)
+        repo.index.commit("Add equal sign line", committer=wilber, author=wilber)
 
 
     yield repo

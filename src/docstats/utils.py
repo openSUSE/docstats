@@ -75,10 +75,16 @@ _BUGTRACKER_REGEXES = (
     # https://en.opensuse.org/openSUSE:Packaging_Patches_guidelines#Current_set_of_abbreviations
     re.compile(r'(?P<bugtracker>bsc|bnc|boo|[fF]ate|FATE|[tT]rello|TRELLO)'
                r'\s?#(?P<id>\d{2,9})'),
+
+    # DocComment
+    # re.compile(r'(?P<doccomment>[dD]oc\s?[cC]omment)\s?#(?P<id>\d{2,9})'),
+
     # CVE
     re.compile(r'(CVE)-(?P<cve>\d{4}-\d{4,7})'),
     #
 )
+
+TRACKERS = ('bsc', 'bnc', 'gh', 'fate', 'trello', 'doccomments')
 
 
 def urlparse(url):
@@ -272,3 +278,21 @@ def compare_usernames(user, other):
 
     return False
 
+
+def findallmails(text):
+    """Find all email addresses in a text
+
+    :param text: text with mail addresses (usually separated by commas or/and spaces)
+    :return: list
+    """
+    result = {}
+    if not text:
+        return result
+
+    for line in text.split('\n'):
+        if line.startswith('#'):
+            continue
+        primary, *mails = _RFC5322_REGEX.findall(line)
+        result[primary] = primary
+        result.update((key, primary) for key in mails)
+    return result
