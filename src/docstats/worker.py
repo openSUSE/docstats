@@ -30,6 +30,7 @@ from .log import log
 from .repo import analyze
 from .utils import TRACKERS
 
+
 def clone_repo(url, gitdir):
     """Clone the Git repository
 
@@ -133,11 +134,13 @@ def work(config, basedir, sections=None, jobs=1):
             try:
                 data = future.result()
                 q.put(data)
-            # TODO: Make exceptions more explicit
-            except Exception as error:
+            except (git.GitCommandError, git.CacheError, git.CommandError,
+                    git.GitCommandNotFound, git.HookExecutionError, git.NoSuchPathError,
+                    git.ParseError, git.RepositoryDirtyError, git.UnmergedEntriesError
+                    ) as error:
                 log.fatal('%r generated an exception: %s', url, error, exc_info=1)
             else:
-                log.info('Got from URL %r: %s', url, data)
+                log.info('Got data from URL %r', url)
 
     end = time()
     log.info("Finished worker. Time=%.2fs", float(end - start))

@@ -4,6 +4,9 @@ import pytest
 import py
 import sys
 
+from docstats.repo import if_range_is_empty
+from unittest.mock import patch, MagicMock, Mock
+
 
 skip_below_py345 = pytest.mark.skipif((sys.version_info.major,
                                        sys.version_info.minor,
@@ -18,3 +21,21 @@ skip_below_py345 = pytest.mark.skipif((sys.version_info.major,
 @skip_below_py345
 def test_repo(git_repo):
     print("Git-Repo:", git_repo)
+
+
+@patch('docstats.worker.git.Repo')
+def test_if_range_is_empty_with_False(mock_repo):
+    def yield_empty():
+        yield iter([])
+
+    mock_repo.iter_commits.side_effect = yield_empty()
+    assert not if_range_is_empty(mock_repo, '')
+
+
+@patch('docstats.worker.git.Repo')
+def test_if_range_is_empty_with_True(mock_repo):
+    def yield_commit():
+        yield iter(['fake-commit'])
+
+    mock_repo.iter_commits.side_effect = yield_commit()
+    assert  if_range_is_empty(mock_repo, '')

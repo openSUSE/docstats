@@ -80,6 +80,22 @@ def collect_issues(commit, dictresult):
     return dictresult
 
 
+def if_range_is_empty(repo, rev):
+    """Check if there can be a valid commit retrieved from the given range
+
+    :param repo: a repository
+    :type repo: :class:`git.Repo`
+    :param rev: the range
+    :return: True when range has no commits, False otherwise
+    """
+    try:
+        # Just try to grab the first commit
+        first = next(repo.iter_commits(rev))
+        return True
+    except StopIteration:
+        return False
+
+
 def iter_commits(config, repo, dictresult, name, branchname, start=None, end=None):
     """Iterate through all commits
 
@@ -102,23 +118,35 @@ def iter_commits(config, repo, dictresult, name, branchname, start=None, end=Non
     if rev == '..':
         rev = repo.head
 
-    log.info("Using %s(start=%r, end=%r) %s", branchname, start, end, rev)
+    try:
+        for idx, commit in enumerate(repo.iter_commits(rev), 1):
+            # Collect the statistics information
+            collect_diffstats(commit, dictresult[name])
 
-    for idx, commit in enumerate(repo.iter_commits(rev), 1):
-        # Collect the statistics information
-        collect_diffstats(commit, dictresult[name])
+            # Collect the committers
+            committers = findallmails(config.defaults().get('team-mails', []))
+            collect_committers(commit, dictresult[name], committers)
 
-        # Collect the committers
-        committers = findallmails(config.defaults().get('team-mails', []))
-        collect_committers(commit, dictresult[name], committers)
+            # Collect the bug issues from different trackers
+            collect_issues(commit, dictresult[name])
 
-        # Collect the bug issues from different trackers
-        collect_issues(commit, dictresult[name])
+        log.info("Used %s(start=%r, end=%r) #commits=%s", branchname, start, end, idx)
+        # Save overall commits:
+        dictresult[name]['commits'] = idx
 
-    # Save overall commits:
-    dictresult[name]['commits'] = idx
+        return dictresult
 
-    return dictresult
+    except UnboundLocalError:
+        # This happens only, when we cannot find any commits on the branch with the specified
+        # range.
+        log.info("Skipping %s(start=%r, end=%r) as there are no commits in the specified range",
+                 branchname, start, end)
+        dictresult[name]['commits'] = 0
+        dictresult[name].update(init_stats_dict())
+        dictresult[name].update(init_tracker_dict())
+        dictresult[name].update(init_committer_dict())
+        return dictresult
+
 
 
 def init_stats_dict():
@@ -129,6 +157,24 @@ def init_stats_dict():
     :rtype: dict
     """
     return {item: 0 for item in ('deletions', 'files', 'insertions', 'lines')}
+
+
+def init_tracker_dict():
+    """Create a dictionary with empty tracker issues
+
+    :return: dictionary with empty list
+    :rtype: dict
+    """
+    return {item: [] for item in TRACKERS}
+
+
+def init_committer_dict():
+    """Create a dictionary with some empty committers keys
+
+    :return: dictionary with empty lists
+    :rtype: dict
+    """
+    return {item: [] for item in ('team-committers', 'external-committers')}
 
 
 def cleanup_dict(dictresult):
@@ -142,10 +188,10 @@ def cleanup_dict(dictresult):
         for tracker in TRACKERS:
             dictresult[branch][tracker] = list(set(dictresult[branch][tracker]))
         # Make committers unique and count them:
-        dictresult[branch]['team-committers'] = len(set(dictresult[branch]['team-committers']))
-        dictresult[branch]['external-committers'] = len(set(dictresult[branch]['external-committers']))
-        dictresult[branch]['team-committers-mails'] = list(set(dictresult[branch]['team-committers-mails']))
-        dictresult[branch]['external-committers-mails'] = list(set(dictresult[branch]['external-committers-mails']))
+        for item in ('team-committers', 'external-committers',
+                     # These are just for debugging purposes:
+                     'team-committers-mails', 'external-committers-mails'):
+            dictresult[branch][item] = len(set(dictresult[branch][item]))
 
 
 def analyze(repo, config):
@@ -222,12 +268,5 @@ def analyze(repo, config):
         iter_commits(config, repo, result, name, branchname, start, end)
 
     cleanup_dict(result)
-
     log.debug("Result dict is %r", result)
-
-    #jsonfile = wd + ".json"
-    #with open(jsonfile, 'w') as fh:
-    #    json.dump(result, fh, indent=4)
-    #    log.debug("Writing results to %r", jsonfile)
-
     return result
