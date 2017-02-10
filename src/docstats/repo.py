@@ -19,7 +19,6 @@
 from .config import getbranches
 from .log import log
 from git import GitCommandError
-import json
 from .utils import TRACKERS, findallmails, findbugid
 
 
@@ -226,9 +225,9 @@ def analyze(repo, config):
 
     log.debug("Result dict is %r", result)
 
-    jsonfile = wd + ".json"
-    with open(jsonfile, 'w') as fh:
-        json.dump(result, fh, indent=4)
-        log.debug("Writing results to %r", jsonfile)
+    #jsonfile = wd + ".json"
+    #with open(jsonfile, 'w') as fh:
+    #    json.dump(result, fh, indent=4)
+    #    log.debug("Writing results to %r", jsonfile)
 
     return result
