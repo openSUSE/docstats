@@ -1,3 +1,5 @@
+#
+
 import pytest
 from unittest.mock import patch
 
@@ -221,6 +223,8 @@ def test_compare_usernames(email, other, expected):
     ("", {}),
     #
     (None, {}),
+    #
+    ('# comment', {}),
     #
     ("tux@penguin.com", {'tux@penguin.com': 'tux@penguin.com'}),
     #

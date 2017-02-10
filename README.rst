@@ -4,7 +4,7 @@ Overview
 
 .. start-badges
 
-|travis| |codecov| |scrutinizer| |license|
+|travis| |codecov| |landscape| |license|
 
 
 .. |travis| image:: https://travis-ci.org/openSUSE/docstats.svg?branch=develop
@@ -15,9 +15,9 @@ Overview
     :alt: Coverage Status
     :target: https://codecov.io/github/openSUSE/docstats
 
-.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/openSUSE/docstats/develop.svg
-    :alt: Scrutinizer Status
-    :target: https://scrutinizer-ci.com/g/openSUSE/docstats/
+.. |landscape| image:: https://landscape.io/github/openSUSE/docstats/develop/landscape.svg?style=flat
+   :target: https://landscape.io/github/openSUSE/docstats/develop
+   :alt: Landscape Code Health
 
 .. |license| image:: https://img.shields.io/badge/license-GPL3-green.svg
     :alt:

@@ -30,7 +30,7 @@ def collect_diffstats(commit, dictresult):
     :param dict dictresult: the result of the dictionary
     """
     for item in commit.stats.total:
-            dictresult[item] += commit.stats.total[item]
+        dictresult[item] += commit.stats.total[item]
 
 
 def collect_committers(commit, dictresult, committers):
@@ -41,7 +41,7 @@ def collect_committers(commit, dictresult, committers):
     :param commit:  the commit
     :type commit: :class:`git.Commit`
     :param dict dictresult: the result of the dictionary
-    :param committers: ditionary of all team mails with items in the form of "mail": "primary-mail"
+    :param committers: ditionary of all team mails; each items are in the syntax of "mail": "primary-mail"
     :type committers: dict
     """
     mail = commit.committer.email.lower()
@@ -55,29 +55,20 @@ def collect_committers(commit, dictresult, committers):
     dictresult[key+'-mails'].append(mail)
 
 
-def collect_issues(commit, dictresult):
-    """Collect all the issues that can be find in a commit message
+def collect_issues(message, dictresult):
+    """Collect all tracker issues that can be find in a commit message
 
-    :param commit:  the commit
-    :type commit: :class:`git.Commit`
+    :param message:  the message of a commit
+    :type message: str
     :param dict dictresult: the result of the dictionary; the dict will be changed after the
-                            function has been called
+                            function has been called!
     """
 
-    # Initialize the trackers with an empty set if needed
-    for tracker in TRACKERS:
-        if not dictresult.get(tracker):
-            dictresult[tracker] = []
-
-    # Go through each summary and message and try to find issue tracker information
-    for msg in [commit.summary, commit.message]:
-        for tracker, issue in findbugid(msg):
-            if tracker in TRACKERS:
-                dictresult[tracker].append(issue)
-            elif tracker[:3] in ('fix', 'clo', 'res'):
-                dictresult['gh'].append(issue)
-
-    return dictresult
+    for tracker, issue in findbugid(message):
+        # Normalize GitHub issues which starts with "fix(ed|s), clo(SED?), resOLVE(S|D)?
+        tracker = "gh" if tracker[:3] in ('fix', 'clo', 'res') else tracker
+        if tracker in TRACKERS:
+            dictresult[tracker].append(issue)
 
 
 def if_range_is_empty(repo, rev):
@@ -128,7 +119,7 @@ def iter_commits(config, repo, dictresult, name, branchname, start=None, end=Non
             collect_committers(commit, dictresult[name], committers)
 
             # Collect the bug issues from different trackers
-            collect_issues(commit, dictresult[name])
+            collect_issues(commit.message, dictresult[name])
 
         log.info("Used %s(start=%r, end=%r) #commits=%s", branchname, start, end, idx)
         # Save overall commits:
@@ -142,11 +133,10 @@ def iter_commits(config, repo, dictresult, name, branchname, start=None, end=Non
         log.info("Skipping %s(start=%r, end=%r) as there are no commits in the specified range",
                  branchname, start, end)
         dictresult[name]['commits'] = 0
-        dictresult[name].update(init_stats_dict())
-        dictresult[name].update(init_tracker_dict())
-        dictresult[name].update(init_committer_dict())
+        # dictresult[name].update(init_stats_dict())
+        # dictresult[name].update(init_tracker_dict())
+        # dictresult[name].update(init_committer_dict())
         return dictresult
-
 
 
 def init_stats_dict():
@@ -174,7 +164,8 @@ def init_committer_dict():
     :return: dictionary with empty lists
     :rtype: dict
     """
-    return {item: [] for item in ('team-committers', 'external-committers')}
+    return {item: [] for item in ('team-committers', 'external-committers',
+                                  'team-committers-mails', 'external-committers-mails')}
 
 
 def cleanup_dict(dictresult):
@@ -244,10 +235,9 @@ def analyze(repo, config):
         result[name]['branch'] = branchname
         result[name]['start'] = str(start)
         result[name]['end'] = str(end)
-        result[name]['team-committers'] = []
-        result[name]['external-committers'] = []
-        result[name]['team-committers-mails'] = []
-        result[name]['external-committers-mails'] = []
+        result[name].update(init_stats_dict())
+        result[name].update(init_tracker_dict())
+        result[name].update(init_committer_dict())
 
         try:
             # head = repo.create_head(branchname)
@@ -263,8 +253,6 @@ def analyze(repo, config):
             continue
 
         log.info("Investigating %s on repo %r for branch %r...", name, repo.git_dir, branchname)
-
-        result[name].update(init_stats_dict())
         iter_commits(config, repo, result, name, branchname, start, end)
 
     cleanup_dict(result)

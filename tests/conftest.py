@@ -69,7 +69,7 @@ def gittmpdir():
 
 
 @pytest.fixture(scope="session")
-def git_repo():
+def gitrepo():
     """Fixture to create a test Git repository with several commits
 
     :return: temporary repository
@@ -102,6 +102,6 @@ def git_repo():
     # Create some statistics
     result['commits'] = 3
     result['committer_mails'] = {user.email for user in committers}
-    yield result, repo
+    return result, repo
 
     # Possible removal of the git repo

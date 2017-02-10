@@ -38,15 +38,8 @@ def main(cliargs=None):
         log.info(args)
 
         configfile = args['CONFIGFILE']
-        files, config = parseconfig(configfile)
+        _, config = parseconfig(configfile)
 
-        # print(args)
-        # print(config)
-        # ----
-        # print("Sections found:", config.sections())
-        # print("branch", config['doc-slert']['branch'])
-        # print("url", config['doc-slert']['url'])
-        # ----
         basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
         os.makedirs(basedir, exist_ok=True)
         work(config, basedir, sections=args['--sections'], jobs=args['--jobs'])
