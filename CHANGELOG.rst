@@ -2,6 +2,19 @@
 Changelog
 =========
 
+0.1.3 (2017-02-11)
+-----------------------------------------
+
+* Outputs JSON and CSV
+* Improve test coverage
+
+* TODOs:
+  * more error checking
+  * make collectors more configurable through config file
+
+0.1.2 was not released
+
+
 0.1.1 (2017-02-09)
 -----------------------------------------
 
