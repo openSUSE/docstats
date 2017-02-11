@@ -13,7 +13,7 @@ Overview
 
 .. |codecov| image:: https://codecov.io/github/openSUSE/docstats/coverage.svg?branch=develop
     :alt: Coverage Status
-    :target: https://codecov.io/github/openSUSE/docstats
+    :target: https://codecov.io/gh/openSUSE/docstats/branch/develop
 
 .. |landscape| image:: https://landscape.io/github/openSUSE/docstats/develop/landscape.svg?style=flat
    :target: https://landscape.io/github/openSUSE/docstats/develop
