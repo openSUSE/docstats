@@ -16,18 +16,19 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
+import csv
 from concurrent.futures import ProcessPoolExecutor, as_completed
 # from threading import current_thread
 from time import time
 import queue
 import os.path
-
-
 import git
+import json
 
 from .config import geturls
 from .log import log
 from .repo import analyze
+from .utils import TRACKERS
 
 
 def clone_repo(url, gitdir):
@@ -47,8 +48,53 @@ def clone_repo(url, gitdir):
     return repo
 
 
+def tracker2int(data):
+    """Convert the list of trackers into a number
+
+    :param dict data: the result dictionary
+    :return: None
+    """
+    for bug in TRACKERS:
+        for key in data:
+            data[key][bug] = len(data[key][bug])
+
+
+def output_result(repo, result):
+    """Output the results as JSON and CSV
+
+    :param repo: the repository
+    :type repo: :class:`git.Repo`
+    :param dict result: the result dictionary
+    :return:
+    """
+    wd = repo.working_tree_dir
+    filename = wd + ".json"
+    with open(filename, 'w') as fh:
+        json.dump(result, fh, indent=4)
+        log.info("Writing results to %r", filename)
+
+    filename = wd + ".csv"
+    # Make sure we have only numbers for CSV
+    tracker2int(result)
+    with open(filename, 'wt') as csvfile:
+        # These are the fields that we are interested in
+        fields = ['release',
+                  'commits', 'insertions', 'deletions', 'lines',
+                  'fate', 'bnc', 'bsc', 'files', 'trello', 'gh', 'doccomments',
+                  'team-committers', 'external-committers',
+                  ]
+        writer = csv.writer(csvfile)
+        writer.writerow(fields)
+        for key in sorted(result):
+            row = []
+            row.append(key)
+            row.extend([result[key][field] for field in fields[1:]])
+            writer.writerow(row)
+        log.info("Writing results to %r", filename)
+
+
 def clone_and_analyze(url, gitdir, config):
-    """Clone the GitHub repo and analyze it
+    """Clone the GitHub repo and analyze it and save the results
 
     :param url: the GitHub URL to clone
     :param gitdir: the path to the temporary directory (including the section)
@@ -57,7 +103,9 @@ def clone_and_analyze(url, gitdir, config):
     :return:
     """
     repo = clone_repo(url, gitdir)
-    return analyze(repo, config)
+    result = analyze(repo, config)
+    output_result(repo, result)
+    return result
 
 
 def work(config, basedir, sections=None, jobs=1):
@@ -86,11 +134,13 @@ def work(config, basedir, sections=None, jobs=1):
             try:
                 data = future.result()
                 q.put(data)
-            # TODO: Make exceptions more explicit
-            except Exception as exc:
-                log.fatal('%r generated an exception: %s', url, exc)
+            except (git.GitCommandError, git.CacheError, git.CommandError,
+                    git.GitCommandNotFound, git.HookExecutionError, git.NoSuchPathError,
+                    git.ParseError, git.RepositoryDirtyError, git.UnmergedEntriesError
+                    ) as error:
+                log.fatal('%r generated an exception: %s', url, error, exc_info=1)
             else:
-                log.info('Got from URL %r: %s', url, data)
+                log.info('Got data from URL %r', url)
 
     end = time()
     log.info("Finished worker. Time=%.2fs", float(end - start))

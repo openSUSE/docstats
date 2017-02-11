@@ -55,7 +55,7 @@ LOGLEVELS = {None: logging.NOTSET,  # 0
              }
 
 
-def setloglevel(verbose):
+def setloglevel(verbose):  # pragma: no cover
     """Set log level according to verbose argument
 
     :param int verbose: verbose level to set

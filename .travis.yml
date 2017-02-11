@@ -27,7 +27,8 @@ script:
     - py.test -l -vv --no-cov-on-fail --cov=docstats --cov-report=term-missing
 
 after_success:
-    - codecov
+    - ls -l .coverage.*
+    - codecov --token $CODECOV_TOKEN --file .coverage.*
 
 before_cache:
   - rm -rf $HOME/.cache/pip/log

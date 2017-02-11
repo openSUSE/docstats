@@ -1,5 +1,6 @@
-import pytest
+#
 
+import pytest
 import docstats.cli
 from docstats.cli import parsecli, checkcliargs
 

@@ -4,7 +4,7 @@ Overview
 
 .. start-badges
 
-|travis| |codecov| |scrutinizer| |license|
+|travis| |codecov| |landscape| |license|
 
 
 .. |travis| image:: https://travis-ci.org/openSUSE/docstats.svg?branch=develop
@@ -13,11 +13,11 @@ Overview
 
 .. |codecov| image:: https://codecov.io/github/openSUSE/docstats/coverage.svg?branch=develop
     :alt: Coverage Status
-    :target: https://codecov.io/github/openSUSE/docstats
+    :target: https://codecov.io/gh/openSUSE/docstats/branch/develop
 
-.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/openSUSE/docstats/develop.svg
-    :alt: Scrutinizer Status
-    :target: https://scrutinizer-ci.com/g/openSUSE/docstats/
+.. |landscape| image:: https://landscape.io/github/openSUSE/docstats/develop/landscape.svg?style=flat
+   :target: https://landscape.io/github/openSUSE/docstats/develop
+   :alt: Landscape Code Health
 
 .. |license| image:: https://img.shields.io/badge/license-GPL3-green.svg
     :alt:
@@ -48,6 +48,29 @@ Quick Start
 
 To use the program without :command:`pip` and virtual environment (but with all
 the dependencies), use the following command after cloning this repository::
+
+    $ PYTHONPATH=src python3 -m docstats -h
+
+
+
+Conceptual Overview
+===================
+
+The script :command:`docstats` performs the following tasks:
+
+#. Clone the repositories that are found in the configuration file.
+#. Iterate through all repositories and do:
+  #. Collect the diff statistics.
+  #. Collect the overall committers (usually reduced to team members only).
+  #. Collect bugtracker issue numbers from commit messages.
+#. Output as JSON file.
+
+
+Quick Start
+===========
+
+To use the program without :command:`pip` and virtual environment, use the
+following command after cloning this repository::
 
     $ PYTHONPATH=src python3 -m docstats -h
 

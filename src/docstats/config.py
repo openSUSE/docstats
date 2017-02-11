@@ -62,14 +62,14 @@ def geturls(config, sections=None):
         value = config.get(sec, 'url', fallback=None)
         if value:
             yield sec, value
-        else:
-            continue
 
 
 def getbranchparts(string, stdbranch='develop'):
     """Generator: Yields its branch name and optional start/end dates from a string
 
     For example:
+    >>> list(getbranchparts('name'))
+    [('name', 'develop', '', '')]
     >>> list(getbranchparts('name maintenance/SLE12'))
     [('name', 'maintenance/SLE12', '', '')]
     >>> list(getbranchparts('name maintenance/SLE12   abc'))

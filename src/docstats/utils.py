@@ -21,7 +21,7 @@ import os
 import urllib.parse
 
 
-__all__ = ('compare_usernames', 'findbugid', 'findcommits', 'git_urlparse', 'http_urlparse', 'tmpdir', 'urlparse',)
+__all__ = ('compare_usernames', 'findbugid', 'findcommits', 'git_urlparse', 'http_urlparse', 'urlparse',)
 
 
 #: For parsing GitHub URLs
@@ -50,7 +50,9 @@ _GITDOMAIN_REPO_REGEX = re.compile(_DOMAIN_REPO_REGEX)
 #: The official regex for email addresses
 _RFC5322_REGEX = re.compile(r'''(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])''')
 
-
+_COMMIT_HASH_REGEX = re.compile(r'(?P<commit>[cC]ommit)?'
+                                r'\s?[#]?'
+                                r'\b(?P<id>[0-9a-f]{5,40})\b')
 
 #:
 #: For parsing text with bug fix information
@@ -205,9 +207,6 @@ def findcommits(text):
     :return: a list of all found commit hashes
     :rtype: list
     """
-    _COMMIT_HASH_REGEX = re.compile(r'(?P<commit>[cC]ommit)?'
-                                    r'\s?[#]?'
-                                    r'\b(?P<id>[0-9a-f]{5,40})\b')
     match = _COMMIT_HASH_REGEX.findall(text)
     if match:
         return [(text if text else 'commit', number) for text, number in match]

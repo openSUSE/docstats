@@ -100,14 +100,6 @@ def test_geturls_with_patching(mock_config):
     assert urls == [('foo', 'url-value')]
 
 
-@patch('docstats.config.ConfigParser')
-def test_geturls_with_patching_empty_url(mock_config):
-    mock_config.sections.return_value = ['foo']
-    mock_config.get.return_value = ''
-    urls = list(geturls(mock_config))
-    assert urls == []
-
-
 # --------------------------------------------------------
 @pytest.mark.parametrize('string,expected', [
     #
@@ -140,6 +132,8 @@ def test_getbranches(string, expected):
 
 
 @pytest.mark.parametrize('string,expected', [
+    #
+    ('name',                              [('name', 'develop', '', '')]),
     #
     ('name maintenance/SLE12',            [('name', 'maintenance/SLE12', '', '')]),
     #
