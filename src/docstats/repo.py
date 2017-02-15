@@ -19,7 +19,8 @@
 from .config import getbranches
 from .log import log
 from git import GitCommandError
-from .utils import TRACKERS, findallmails, findbugid
+from .tracker import TRACKERS, findbugid
+from .utils import findallmails
 
 
 def collect_diffstats(commit, dictresult):
