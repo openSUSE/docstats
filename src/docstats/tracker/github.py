@@ -32,7 +32,6 @@ _DOMAIN_REPO_REGEX = (r'(?:(?P<domain>{domain}+)/'
                                 ))
 
 
-# see https://help.github.com/articles/closing-issues-via-commit-messages/
 # external GitHub repositories
 _GH_REGEX = re.compile(r'(?P<github>fix(?:es|ed)?\s(?:for)?|'
                        r'close[sd]?|'
@@ -42,7 +41,21 @@ _GH_REGEX = re.compile(r'(?P<github>fix(?:es|ed)?\s(?:for)?|'
                        re.I)
 
 def github(text):
-    # yield from _GH_REGEX.findall(text)
+    """Find GitHub issue numbers
+
+    It can detect:
+    * fix #123
+    * close #123
+    * resolve #123
+    * fix example_user/example_repo#42
+
+    and any combination of past and present tense.
+
+    See https://help.github.com/articles/closing-issues-via-commit-messages/
+
+    :param text: the text to investigate
+    :return: yields "fate", item or an empty list
+    """
     for action, *item in _GH_REGEX.findall(text):
         #if action.lower() in ('clo', 'fix', 'res'):
         #    key = 'gh'
