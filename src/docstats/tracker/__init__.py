@@ -22,14 +22,15 @@ from .trello import trello
 from .fate import fate
 
 TRACKERS = ('fate', 'bsc', 'gh', 'trello')
-TRACKER_FUNCS =  (fate, bugzilla, github, trello)
+TRACKER_FUNCS = (fate, bugzilla, github, trello)
 
 
 def findbugid(text):
     """Find Bugzilla IDs, GitHub, Fate, and CVEs
 
     :param text: the text containing bug information IDs
-    :return: a list of tuples of all found bug IDs; each item has the format (type, value)
+    :return: a list of tuples of all found bug IDs; each item has the
+             format (type, value)
     :rtype: list
     """
     for func in TRACKER_FUNCS:

@@ -26,10 +26,10 @@ _SERVER_REGEX = _USER_REGEX
 _DOMAIN_REGEX = _USER_REGEX
 _REPO_REGEX = _USER_REGEX
 _DOMAIN_REPO_REGEX = (r'(?:(?P<domain>{domain}+)/'
-                     r'(?P<repo>{repo}+))?'
-                     r''.format(domain=_DOMAIN_REGEX,
-                                repo=_REPO_REGEX,
-                                ))
+                      r'(?P<repo>{repo}+))?'
+                      r'').format(domain=_DOMAIN_REGEX,
+                                  repo=_REPO_REGEX,
+                                  )
 
 
 # external GitHub repositories
@@ -39,6 +39,7 @@ _GH_REGEX = re.compile(r'(?P<github>fix(?:es|ed)?\s(?:for)?|'
                        r'\s?'
                        r'%s#(?P<id>\d{1,9})' % _DOMAIN_REPO_REGEX,
                        re.I)
+
 
 def github(text):
     """Find GitHub issue numbers
@@ -57,10 +58,6 @@ def github(text):
     :return: yields "fate", item or an empty list
     """
     for action, *item in _GH_REGEX.findall(text):
-        #if action.lower() in ('clo', 'fix', 'res'):
-        #    key = 'gh'
-        #else:
-        #    key = 'gh*'
         key = 'gh'
         if item[1]:
             yield (key, "{}/{}#".format(*item))
