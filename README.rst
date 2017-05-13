@@ -40,7 +40,7 @@ The script :command:`docstats` performs the following tasks:
   #. Collect the diff statistics.
   #. Collect the overall committers (usually reduced to team members only).
   #. Collect bugtracker issue numbers from commit messages.
-#. Output as JSON file.
+#. Output as JSON or CSV file.
 
 
 Quick Start
@@ -51,19 +51,6 @@ the dependencies), use the following command after cloning this repository::
 
     $ PYTHONPATH=src python3 -m docstats -h
 
-
-
-Conceptual Overview
-===================
-
-The script :command:`docstats` performs the following tasks:
-
-#. Clone the repositories that are found in the configuration file.
-#. Iterate through all repositories and do:
-  #. Collect the diff statistics.
-  #. Collect the overall committers (usually reduced to team members only).
-  #. Collect bugtracker issue numbers from commit messages.
-#. Output as JSON file.
 
 
 Quick Start
@@ -87,7 +74,7 @@ To install :program:`docstats`, use the following steps:
 
 #. Create a Python 3 environment and activate it::
 
-    $ pyvenv .env
+    $ python3 -m venv .env
     $ source .env/bin/activate
 
 #. Optionally update the ``pip`` and ``setuptools`` modules::
