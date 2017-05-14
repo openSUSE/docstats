@@ -55,7 +55,7 @@ def collect_committers(commit, dictresult, committers):
         key = 'external-committers'
 
     dictresult[key].append(mail)
-    dictresult[key+'-mails'].append(mail)
+    dictresult[key + '-mails'].append(mail)
 
 
 def collect_issues(message, dictresult):
@@ -68,7 +68,8 @@ def collect_issues(message, dictresult):
     """
 
     for tracker, issue in findbugid(message):
-        # Normalize GitHub issues which starts with "fix(ed|s), clo(SED?), resOLVE(S|D)?
+        # Normalize GitHub issues which starts with "fix(ed|s), clo(SED?),
+        # resOLVE(S|D)?
         tracker = "gh" if tracker[:3] in ('fix', 'clo', 'res') else tracker
         if tracker in TRACKERS:
             dictresult[tracker].append(issue)
@@ -124,7 +125,8 @@ def iter_commits(config, repo, dictresult, name, branchname, start=None, end=Non
             # Collect the bug issues from different trackers
             collect_issues(commit.message, dictresult[name])
 
-        log.info("Used %s(start=%r, end=%r) #commits=%s", branchname, start, end, idx)
+        log.info("Used %s(start=%r, end=%r) #commits=%s",
+                 branchname, start, end, idx)
         # Save overall commits:
         dictresult[name]['commits'] = idx
 
@@ -180,7 +182,8 @@ def cleanup_dict(dictresult):
     for branch in dictresult:
         #
         for tracker in TRACKERS:
-            dictresult[branch][tracker] = list(set(dictresult[branch][tracker]))
+            dictresult[branch][tracker] = list(
+                set(dictresult[branch][tracker]))
         # Make committers unique and count them:
         for item in ('team-committers', 'external-committers',
                      # These are just for debugging purposes:
@@ -255,7 +258,8 @@ def analyze(repo, config):
             result[name] = {'error': error}
             continue
 
-        log.info("Investigating %s on repo %r for branch %r...", name, repo.git_dir, branchname)
+        log.info("Investigating %s on repo %r for branch %r...",
+                 name, repo.git_dir, branchname)
         iter_commits(config, repo, result, name, branchname, start, end)
 
     cleanup_dict(result)

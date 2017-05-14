@@ -140,7 +140,8 @@ def work(config, basedir, sections=None, jobs=1):
                     git.GitCommandNotFound, git.HookExecutionError, git.NoSuchPathError,
                     git.ParseError, git.RepositoryDirtyError, git.UnmergedEntriesError
                     ) as error:
-                log.fatal('%r generated an exception: %s', url, error, exc_info=1)
+                log.fatal('%r generated an exception: %s',
+                          url, error, exc_info=1)
             else:
                 log.info('Got data from URL %r', url)
 

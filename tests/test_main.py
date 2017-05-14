@@ -12,13 +12,16 @@ from configparser import ConfigParser, DuplicateSectionError, DuplicateOptionErr
 def test_main(capsys):
     """Checks, if __main__.py can be executed"""
     with pytest.raises(SystemExit):
-        path = os.path.dirname(os.path.realpath(__file__)) + "/../src/docstats/__main__.py"
-        exec(compile(open(path).read(), path, "exec"), {}, {"__name__": "__main__"})
+        path = os.path.dirname(os.path.realpath(__file__)) + \
+            "/../src/docstats/__main__.py"
+        exec(compile(open(path).read(), path, "exec"),
+             {}, {"__name__": "__main__"})
 
 
 def test_main_with_empty_args():
     with pytest.raises(DocoptExit):
         main([])
+
 
 @pytest.mark.parametrize('error', [
     KeyboardInterrupt,
@@ -42,6 +45,7 @@ def test_main_return_with_0(mock_parsecli, mock_parseconfig, mock_gettmpdir,
                             mock_makedirs, mock_work):
     def work(config, basedir, sections, jobs):
         return True
+
     def gettmpdir(path):
         return True
 

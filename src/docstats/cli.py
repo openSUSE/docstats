@@ -29,7 +29,8 @@
 #  - When you import __main__ it will get executed again (as a module) because
 #    there's no ``docstats.__main__`` in ``sys.modules``.
 #
-#  Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
+# Also see (1) from
+# http://click.pocoo.org/5/setuptools/#setuptools-integration
 
 
 """Create statistics of SUSE doc repositories
@@ -102,13 +103,15 @@ def checkcliargs(args):
     except ValueError:
         raise DocoptExit("Option -j/--jobs does not contain a number")
 
-    args['--sections'] = None if args['--sections'] is None else args['--sections'].split(',')
+    args['--sections'] = None if args['--sections'] is None else args['--sections'].split(
+        ',')
 
     if configfile is None:
         raise DocoptExit("Expected config file")
 
     if not os.path.exists(configfile):
-        raise FileNotFoundError("Couldn't find {!r} config file.".format(configfile))
+        raise FileNotFoundError(
+            "Couldn't find {!r} config file.".format(configfile))
     return True
 
 
