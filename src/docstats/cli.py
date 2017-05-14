@@ -50,7 +50,27 @@ Options:
 """
 
 from docopt import docopt, DocoptExit
+from configparser import (DuplicateSectionError,
+                          DuplicateOptionError,
+                          MissingSectionHeaderError,
+                          )
+import logging
 import os
+
+from .config import parseconfig
+from .utils import gettmpdir
+from .worker import work
+
+
+#: Use __package__, not __name__ here to set overall logging level:
+log = logging.getLogger(__package__)
+
+#: Dictionary: Log levels to map verbosity level to logging values
+LOGLEVELS = {None: logging.NOTSET,  # 0
+             0: logging.NOTSET,     # 0
+             1: logging.INFO,       # 20
+             2: logging.DEBUG,      # 10
+             }
 
 
 def parsecli(cliargs=None):
@@ -90,3 +110,41 @@ def checkcliargs(args):
     if not os.path.exists(configfile):
         raise FileNotFoundError("Couldn't find {!r} config file.".format(configfile))
     return True
+
+
+def main(cliargs=None):
+    """Entry point for the application script
+
+    :param list cliargs: Arguments to parse or None (=use sys.argv)
+    :return: return codes from ``ERROR_CODES``
+    """
+    # We don't want any messages from git.cmd, except warnings
+    loggit = logging.getLogger('git.cmd')
+    loggit.setLevel(logging.WARN)
+
+    try:
+        args = parsecli(cliargs)
+        log.setLevel(LOGLEVELS.get(args['-v'], logging.DEBUG))
+        log.info(args)
+
+        configfile = args['CONFIGFILE']
+        _, config = parseconfig(configfile)
+
+        basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
+        os.makedirs(basedir, exist_ok=True)
+        work(config, basedir, sections=args['--sections'], jobs=args['--jobs'])
+
+    except (DuplicateSectionError, DuplicateOptionError,
+            MissingSectionHeaderError) as error:
+        log.error(error)
+        return 20
+
+    except (FileNotFoundError, OSError) as error:
+        log.error(error)  # exc_info=1
+        return 10
+
+    except KeyboardInterrupt:
+        log.fatal("aborted.")
+        return 10
+
+    return 0

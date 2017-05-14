@@ -18,6 +18,7 @@
 
 import csv
 from concurrent.futures import ProcessPoolExecutor, as_completed
+import logging
 # from threading import current_thread
 from time import time
 import queue
@@ -26,9 +27,10 @@ import git
 import json
 
 from .config import geturls
-from .log import log
 from .repo import analyze
 from .utils import TRACKERS
+
+log = logging.getLogger(__name__)
 
 
 def clone_repo(url, gitdir):

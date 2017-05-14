@@ -16,10 +16,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-from .config import getbranches
-from .log import log
 from git import GitCommandError
+import logging
+
+from .config import getbranches
 from .utils import TRACKERS, findallmails, findbugid
+
+log = logging.getLogger(__file__)
 
 
 def collect_diffstats(commit, dictresult):

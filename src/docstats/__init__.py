@@ -21,4 +21,7 @@ import logging
 __version__ = "0.1.3"
 __author__ = "Thomas Schraitle"
 
+
+#: Set default logging handler to avoid "No handler found" warnings.
+# See https://docs.python.org/3/howto/logging.html#library-config
 logging.getLogger(__name__).addHandler(logging.NullHandler())

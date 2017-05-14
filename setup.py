@@ -105,8 +105,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'docstats = docstats.main:main',
-            'suse-docstats = docstats.main:main',
+            'docstats = docstats.cli:main',
+            # 'suse-docstats = docstats.cli:main',
         ]
     },
 )
