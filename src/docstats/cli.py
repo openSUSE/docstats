@@ -56,22 +56,16 @@ from configparser import (DuplicateSectionError,
                           MissingSectionHeaderError,
                           )
 import logging
+from logging.config import dictConfig
 import os
 
+from .common import DEFAULT_LOGGING_DICT, LOGLEVELS
 from .config import parseconfig
 from .utils import gettmpdir
 from .worker import work
 
-
 #: Use __package__, not __name__ here to set overall logging level:
 log = logging.getLogger(__package__)
-
-#: Dictionary: Log levels to map verbosity level to logging values
-LOGLEVELS = {None: logging.NOTSET,  # 0
-             0: logging.NOTSET,     # 0
-             1: logging.INFO,       # 20
-             2: logging.DEBUG,      # 10
-             }
 
 
 def parsecli(cliargs=None):
@@ -82,8 +76,11 @@ def parsecli(cliargs=None):
     :rtype: dict
     """
     from docstats import __version__
-    version = "%s %s" % (__package__, __version__)
-    args = docopt(__doc__, argv=cliargs, version=version)
+    dictConfig(DEFAULT_LOGGING_DICT)
+    args = docopt(__doc__,
+                  argv=cliargs,
+                  version="%s %s" % (__package__, __version__))
+    log.setLevel(LOGLEVELS.get(args['-v'], logging.DEBUG))
 
     checkcliargs(args)
     return args
@@ -122,12 +119,11 @@ def main(cliargs=None):
     :return: return codes from ``ERROR_CODES``
     """
     # We don't want any messages from git.cmd, except warnings
-    loggit = logging.getLogger('git.cmd')
-    loggit.setLevel(logging.WARN)
+    # loggit = logging.getLogger('git.cmd')
+    # loggit.setLevel(logging.WARN)
 
     try:
         args = parsecli(cliargs)
-        log.setLevel(LOGLEVELS.get(args['-v'], logging.DEBUG))
         log.info(args)
 
         configfile = args['CONFIGFILE']
