@@ -3,7 +3,7 @@
 from unittest.mock import patch, Mock, MagicMock
 from docstats.worker import clone_repo, clone_and_analyze, tracker2int
 from docstats.repo import init_tracker_dict
-from docstats.utils import TRACKERS
+from docstats.tracker import TRACKERS
 
 
 @patch('docstats.worker.os.path.exists')

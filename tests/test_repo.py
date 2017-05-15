@@ -14,7 +14,7 @@ from docstats.repo import (cleanup_dict,
                            init_tracker_dict,
                            init_committer_dict,
                            )
-from docstats.utils import TRACKERS
+from docstats.tracker import TRACKERS
 from unittest.mock import patch, MagicMock, Mock, PropertyMock
 
 
@@ -187,12 +187,12 @@ def test_cleanup_dict():
               'team-committers-mails', 'external-committers-mails')
     resultdict = {}
     resultdict['A'] = init_tracker_dict()
-    resultdict['A']['bnc'].extend(['123', '123'])
+    resultdict['A']['bsc'].extend(['123', '123'])
 
     for item in teams:
         resultdict['A'][item] = ['a', 'a', 'b']
 
     cleanup_dict(resultdict)
-    assert len(resultdict['A']['bnc']) == 1
+    assert len(resultdict['A']['bsc']) == 1
     for item in teams:
         assert resultdict['A'][item] == 2

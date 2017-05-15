@@ -28,7 +28,7 @@ import json
 from .config import geturls
 from .log import log
 from .repo import analyze
-from .utils import TRACKERS
+from .tracker import TRACKERS
 
 
 def clone_repo(url, gitdir):
