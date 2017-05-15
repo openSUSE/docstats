@@ -17,6 +17,8 @@
 #
 
 from configparser import ConfigParser
+import logging
+log = logging.getLogger(__name__)
 
 
 def parseconfig(configfile):
@@ -41,6 +43,7 @@ def parseconfig(configfile):
     """
     config = ConfigParser(default_section='globals')
     files = config.read(configfile)
+    log.debug("Config file %r successfully parsed", files)
     return files, config
 
 

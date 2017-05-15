@@ -16,11 +16,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-from .config import getbranches
-from .log import log
 from git import GitCommandError
+import logging
+
 from .tracker import TRACKERS, findbugid
-from .utils import findallmails
+
+log = logging.getLogger(__file__)
 
 
 def collect_diffstats(commit, dictresult):
@@ -54,7 +55,7 @@ def collect_committers(commit, dictresult, committers):
         key = 'external-committers'
 
     dictresult[key].append(mail)
-    dictresult[key+'-mails'].append(mail)
+    dictresult[key + '-mails'].append(mail)
 
 
 def collect_issues(message, dictresult):
@@ -183,7 +184,8 @@ def cleanup_dict(dictresult):
     for branch in dictresult:
         #
         for tracker in TRACKERS:
-            dictresult[branch][tracker] = list(set(dictresult[branch][tracker]))
+            dictresult[branch][tracker] = list(
+                set(dictresult[branch][tracker]))
         # Make committers unique and count them:
         for item in ('team-committers', 'external-committers',
                      # These are just for debugging purposes:
@@ -258,7 +260,8 @@ def analyze(repo, config):
             result[name] = {'error': error}
             continue
 
-        log.info("Investigating %s on repo %r for branch %r...", name, repo.git_dir, branchname)
+        log.info("Investigating %s on repo %r for branch %r...",
+                 name, repo.git_dir, branchname)
         iter_commits(config, repo, result, name, branchname, start, end)
 
     cleanup_dict(result)

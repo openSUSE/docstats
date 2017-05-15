@@ -29,7 +29,8 @@
 #  - When you import __main__ it will get executed again (as a module) because
 #    there's no ``docstats.__main__`` in ``sys.modules``.
 #
-#  Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
+# Also see (1) from
+# http://click.pocoo.org/5/setuptools/#setuptools-integration
 
 
 """Create statistics of SUSE doc repositories
@@ -50,7 +51,21 @@ Options:
 """
 
 from docopt import docopt, DocoptExit
+from configparser import (DuplicateSectionError,
+                          DuplicateOptionError,
+                          MissingSectionHeaderError,
+                          )
+import logging
+from logging.config import dictConfig
 import os
+
+from .common import DEFAULT_LOGGING_DICT, LOGLEVELS
+from .config import parseconfig
+from .utils import gettmpdir
+from .worker import work
+
+#: Use __package__, not __name__ here to set overall logging level:
+log = logging.getLogger(__package__)
 
 
 def parsecli(cliargs=None):
@@ -61,9 +76,12 @@ def parsecli(cliargs=None):
     :rtype: dict
     """
     from docstats import __version__
-    version = "%s %s" % (__package__, __version__)
-    args = docopt(__doc__, argv=cliargs, version=version)
-
+    dictConfig(DEFAULT_LOGGING_DICT)
+    args = docopt(__doc__,
+                  argv=cliargs,
+                  version="%s %s" % (__package__, __version__))
+    log.setLevel(LOGLEVELS.get(args['-v'], logging.DEBUG))
+    log.debug("CLI result: %s", args)
     checkcliargs(args)
     return args
 
@@ -73,6 +91,7 @@ def checkcliargs(args):
 
     :param args: dictionary from docopt
     :return: True | exceptions
+    :raise: DocoptExit, FileNotFoundError
     """
 
     configfile = args['CONFIGFILE']
@@ -82,11 +101,49 @@ def checkcliargs(args):
     except ValueError:
         raise DocoptExit("Option -j/--jobs does not contain a number")
 
-    args['--sections'] = None if args['--sections'] is None else args['--sections'].split(',')
+    args['--sections'] = None if args['--sections'] is None else args['--sections'].split(
+        ',')
 
     if configfile is None:
         raise DocoptExit("Expected config file")
 
     if not os.path.exists(configfile):
-        raise FileNotFoundError("Couldn't find {!r} config file.".format(configfile))
+        raise FileNotFoundError(
+            "Couldn't find {!r} config file.".format(configfile))
     return True
+
+
+def main(cliargs=None):
+    """Entry point for the application script
+
+    :param list cliargs: Arguments to parse or None (=use sys.argv)
+    :return: return codes from ``ERROR_CODES``
+    """
+    # We don't want any messages from git.cmd, except warnings
+    # loggit = logging.getLogger('git.cmd')
+    # loggit.setLevel(logging.WARN)
+
+    try:
+        args = parsecli(cliargs)
+
+        configfile = args['CONFIGFILE']
+        _, config = parseconfig(configfile)
+
+        basedir = gettmpdir(config.get('globals', 'tempdir', fallback=None))
+        os.makedirs(basedir, exist_ok=True)
+        work(config, basedir, sections=args['--sections'], jobs=args['--jobs'])
+
+    except (DuplicateSectionError, DuplicateOptionError,
+            MissingSectionHeaderError) as error:
+        log.error(error)
+        return 20
+
+    except (FileNotFoundError, OSError) as error:
+        log.error(error)  # exc_info=1
+        return 10
+
+    except KeyboardInterrupt:
+        log.fatal("aborted.")
+        return 10
+
+    return 0

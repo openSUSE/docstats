@@ -28,7 +28,7 @@ Why does this file exist, and why __main__? For more info, read:
 """
 
 import sys
-from docstats.main import main
+from docstats.cli import main
 
 
 if __name__ == "__main__":
