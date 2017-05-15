@@ -19,7 +19,7 @@
 import re
 import os
 import urllib.parse
-
+from .tracker import findbugid
 
 __all__ = ('compare_usernames', 'findbugid', 'findcommits', 'git_urlparse', 'http_urlparse', 'urlparse',)
 
@@ -48,43 +48,11 @@ _GITDOMAIN_REPO_REGEX = re.compile(_DOMAIN_REPO_REGEX)
 
 
 #: The official regex for email addresses
-_RFC5322_REGEX = re.compile(r'''(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])''')
+_RFC5322_REGEX = re.compile(r'''(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])''')  # noqa
 
 _COMMIT_HASH_REGEX = re.compile(r'(?P<commit>[cC]ommit)?'
                                 r'\s?[#]?'
                                 r'\b(?P<id>[0-9a-f]{5,40})\b')
-
-#:
-#: For parsing text with bug fix information
-_BUGTRACKER_REGEXES = (
-    # see https://help.github.com/articles/closing-issues-via-commit-messages/
-    re.compile(r'(?P<github>fix(?:es|ed)?|'
-               r'close[sd]?|'
-               r'resolve[sd]?)'
-               r'(?:\s+(?:for))?'
-               r'\s?#(?P<id>\d{1,9})', re.IGNORECASE),
-
-    # external GitHub repositories
-    re.compile(r'(?P<github>[fF]ix(?:es|ed)?|'
-               r'[cC]lose[sd]?|'
-               r'[rR]esolve[sd]?)'
-               r'\s?'
-               r'%s#(?P<id>\d{1,9})' % _DOMAIN_REPO_REGEX),
-
-    # see https://en.opensuse.org/openSUSE:Creating_a_changes_file_(RPM)#Bug_fix.2C_feature_implementation
-    # https://en.opensuse.org/openSUSE:Packaging_Patches_guidelines#Current_set_of_abbreviations
-    re.compile(r'(?P<bugtracker>bsc|bnc|boo|[fF]ate|FATE|[tT]rello|TRELLO)'
-               r'\s?#(?P<id>\d{2,9})'),
-
-    # DocComment
-    # re.compile(r'(?P<doccomment>[dD]oc\s?[cC]omment)\s?#(?P<id>\d{2,9})'),
-
-    # CVE
-    re.compile(r'(CVE)-(?P<cve>\d{4}-\d{4,7})'),
-    #
-)
-
-TRACKERS = ('bsc', 'bnc', 'gh', 'fate', 'trello', 'doccomments')
 
 
 def urlparse(url):
@@ -158,46 +126,6 @@ def gettmpdir(path):
         replaceable = os.environ.get(var, '')
         path = path.replace("${}".format(var), replaceable)
     return path
-
-
-def findbugid(text):
-    """Find Bugzilla IDs, GitHub, Fate, and CVEs
-
-    :param text: the text containing bug information IDs
-    :return: a list of tuples of all found bug IDs; each item has the format (type, value)
-    :rtype: list
-    """
-
-    def _github(m):
-        # "normalize" the text part of the match
-        return [(text.lower(), number) for text, number in m]
-
-    def _ext_github(m):
-        # "normalize" the text, domain, and repo part of the match
-        return [(text.lower(), middle[0].lower(), middle[1].lower(), number) for text, *middle, number in m]
-
-    def _bugtracker(m):
-        # we reuse the function from _github which just make the text
-        # lowercase
-        return _github(m)
-
-    def _cve(m):
-        # don't change anything for CVE entries
-        return m
-
-    # Order must match the regexes in _BUGTRACKER_REGEXES
-    functions = [_github, _ext_github, _bugtracker, _cve]
-
-    result = []
-    # Iterate through all possible regexes and deliver a tuple of
-    # (regex, func). The "func" part is used to "cleanup" the matching
-    for regex, func in zip(_BUGTRACKER_REGEXES, functions):
-        match = regex.findall(text)
-        if match is not None:
-            # cleanup
-            result.extend(func(match))
-
-    return result
 
 
 def findcommits(text):

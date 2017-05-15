@@ -16,12 +16,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-import logging
+import re
 
-__version__ = "0.1.4"
-__author__ = "Thomas Schraitle"
+_BUGZILLA_REGEX = re.compile(r'(?P<bugtracker>bsc|bnc)\s?#(?P<id>\d{2,9})')
 
 
-#: Set default logging handler to avoid "No handler found" warnings.
-# See https://docs.python.org/3/howto/logging.html#library-config
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+def bugzilla(text):
+    # Just "normalize" the tracker thing to "bsc" as "bnc" is outdated
+    for tracker, item in _BUGZILLA_REGEX.findall(text):
+        yield 'bsc', item

@@ -19,8 +19,7 @@
 from git import GitCommandError
 import logging
 
-from .config import getbranches
-from .utils import TRACKERS, findallmails, findbugid
+from .tracker import TRACKERS, findbugid
 
 log = logging.getLogger(__file__)
 
@@ -44,7 +43,8 @@ def collect_committers(commit, dictresult, committers):
     :param commit:  the commit
     :type commit: :class:`git.Commit`
     :param dict dictresult: the result of the dictionary
-    :param committers: ditionary of all team mails; each items are in the syntax of "mail": "primary-mail"
+    :param committers: ditionary of all team mails; each items are in the
+                       syntax of "mail": "primary-mail"
     :type committers: dict
     """
     mail = commit.committer.email.lower()
@@ -63,13 +63,13 @@ def collect_issues(message, dictresult):
 
     :param message:  the message of a commit
     :type message: str
-    :param dict dictresult: the result of the dictionary; the dict will be changed after the
-                            function has been called!
+    :param dict dictresult: the result of the dictionary; the dict will
+                            be changed after the function has been called!
     """
 
     for tracker, issue in findbugid(message):
-        # Normalize GitHub issues which starts with "fix(ed|s), clo(SED?),
-        # resOLVE(S|D)?
+        # Normalize GitHub issues which starts with
+        # "fix(ed|s), clo(SED?), resOLVE(S|D)?
         tracker = "gh" if tracker[:3] in ('fix', 'clo', 'res') else tracker
         if tracker in TRACKERS:
             dictresult[tracker].append(issue)
@@ -91,14 +91,16 @@ def if_range_is_empty(repo, rev):
         return False
 
 
-def iter_commits(config, repo, dictresult, name, branchname, start=None, end=None):
+def iter_commits(config, repo, dictresult, name, branchname,
+                 start=None, end=None):
     """Iterate through all commits
 
     :param config: the docstats configuration contents
     :type config: :class:`configparser.ConfigParser`
     :param repo: a repository
     :type repo: :class:`git.Repo`
-    :param dict dictresult: the result of the dictionary; the dict will be changed after the
+    :param dict dictresult: the result of the dictionary; the
+                            dict will be changed after the
                             function has been called
     :param str name: name of the observable branch
     :param str branchname: the name of the branch

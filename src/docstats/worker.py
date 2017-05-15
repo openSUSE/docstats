@@ -28,7 +28,7 @@ import json
 
 from .config import geturls
 from .repo import analyze
-from .utils import TRACKERS
+from .tracker import TRACKERS
 
 log = logging.getLogger(__name__)
 

@@ -61,7 +61,7 @@ def requires(filename):
 # -----------------------------------------------------------------------------
 setup(
     name='docstats',
-    version='0.1.3',
+    version='0.1.4',
     license='BSD',
     description='Statistics and Metrics for Documentation Team',
     long_description='%s\n%s' % (
@@ -80,7 +80,8 @@ setup(
     classifiers=[
         # complete classifier list:
         # http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'Development Status :: 3 - Alpha',
+        # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: Unix',

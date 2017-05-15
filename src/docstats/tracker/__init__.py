@@ -16,12 +16,22 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-import logging
+from .bugzilla import bugzilla
+from .github import github
+from .trello import trello
+from .fate import fate
 
-__version__ = "0.1.4"
-__author__ = "Thomas Schraitle"
+TRACKERS = ('fate', 'bsc', 'gh', 'trello')
+TRACKER_FUNCS = (fate, bugzilla, github, trello)
 
 
-#: Set default logging handler to avoid "No handler found" warnings.
-# See https://docs.python.org/3/howto/logging.html#library-config
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+def findbugid(text):
+    """Find Bugzilla IDs, GitHub, Fate, and CVEs
+
+    :param text: the text containing bug information IDs
+    :return: a list of tuples of all found bug IDs; each item has the
+             format (type, value)
+    :rtype: list
+    """
+    for func in TRACKER_FUNCS:
+        yield from func(text)

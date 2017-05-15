@@ -16,12 +16,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-import logging
+import re
 
-__version__ = "0.1.4"
-__author__ = "Thomas Schraitle"
+_FATE_REGEX = re.compile(r'(?:fate\s?#|https://fate\.suse\.com/)(\d+)', re.I)
 
 
-#: Set default logging handler to avoid "No handler found" warnings.
-# See https://docs.python.org/3/howto/logging.html#library-config
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+def fate(text):
+    """Searches for FATE entries in text, usually commit messages.
+
+       It can detect:
+       * FATE#123, fate#123, or Fate#123
+       * https://fate.suse.com/123
+
+    :param text: the text to investigate
+    :return: yields "fate", item or an empty list
+    """
+    for item in _FATE_REGEX.findall(text):
+        # the result will be, for example, either one of these:
+        # tracker='fate#123', items=['fate', '123', '', '']
+        #
+        yield "fate", item

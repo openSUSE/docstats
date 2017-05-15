@@ -16,12 +16,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 
-import logging
+import re
 
-__version__ = "0.1.4"
-__author__ = "Thomas Schraitle"
+_TRELLO_REGEX = re.compile(r'(?:trello\s?#|https://trello\.com/c/)(\d+|\w{8})\b', re.I)
 
 
-#: Set default logging handler to avoid "No handler found" warnings.
-# See https://docs.python.org/3/howto/logging.html#library-config
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+def trello(text):
+    """Searches for Trello entries in text, usually commit messages.
+
+       It can detect:
+       * Trello#123, trello#123, or trello#123
+       * https://trello.com/c/123 and https://trello.com/c/123/long-title
+         would lead to the same Trello number (here: 123)
+
+       Board URLs starting with https://trello.com/b/... are not included in the result.
+
+    :param text: the text to investigate
+    :return: yields "fate", item or an empty list
+    """
+    for item in _TRELLO_REGEX.findall(text):
+        yield 'trello', item
