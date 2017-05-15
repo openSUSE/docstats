@@ -81,7 +81,7 @@ def parsecli(cliargs=None):
                   argv=cliargs,
                   version="%s %s" % (__package__, __version__))
     log.setLevel(LOGLEVELS.get(args['-v'], logging.DEBUG))
-
+    log.debug("CLI result: %s", args)
     checkcliargs(args)
     return args
 
@@ -91,6 +91,7 @@ def checkcliargs(args):
 
     :param args: dictionary from docopt
     :return: True | exceptions
+    :raise: DocoptExit, FileNotFoundError
     """
 
     configfile = args['CONFIGFILE']
@@ -124,7 +125,6 @@ def main(cliargs=None):
 
     try:
         args = parsecli(cliargs)
-        log.info(args)
 
         configfile = args['CONFIGFILE']
         _, config = parseconfig(configfile)
